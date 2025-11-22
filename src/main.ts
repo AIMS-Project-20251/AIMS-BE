@@ -2,10 +2,9 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as compression from 'compression';
+import compression from 'compression';
 import helmet from 'helmet';
-import * as morgan from 'morgan';
-
+import morgan from 'morgan';
 import { env } from './config';
 import { AppModule } from './modules/app.module';
 
