@@ -9,7 +9,10 @@ import { PayOrderModule } from './pay-order/pay-order.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
-    TypeOrmModule.forRoot(dataSource.options),
+     TypeOrmModule.forRoot({
+      ...dataSource.options,
+      autoLoadEntities: true,
+    }),
     ProductsModule,
     PlaceOrderModule,
     PayOrderModule,

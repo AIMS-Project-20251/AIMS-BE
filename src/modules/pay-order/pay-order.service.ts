@@ -50,6 +50,14 @@ export class PayOrderService {
     return { success: true, orderId: order.id };
   }
 
-  comfirmVietqrTransaction() {
+  async comfirmVietqrTransaction(vietQROrderId: string) {
+    const order = await this.orderRepo.findOne({ where: { id: Number(vietQROrderId) } });
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    order.status = OrderStatus.APPROVED;
+    await this.orderRepo.save(order);
+
+    return { success: true, orderId: order.id };
   }
 }
