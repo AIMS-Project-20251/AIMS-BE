@@ -24,7 +24,7 @@ export class PayOrderService {
   }
 
   async initiatePayment(orderId: number, method: 'PAYPAL' | 'VIETQR' = 'VIETQR'): Promise<PaymentResponse> {
-    const order = await this.orderRepo.findOne({ where: { id: orderId } });
+    const order = await this.orderRepo.findOne({ where: { id: orderId, status: OrderStatus.PENDING }, relations: ['items', 'items.product'] });
     if (!order) {
       throw new BadRequestException('Order not found');
     }

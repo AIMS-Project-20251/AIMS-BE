@@ -18,9 +18,12 @@ const envSchema = z.object({
   PAYPAL_CLIENT_ID: z.string().optional(),
   PAYPAL_CLIENT_SECRET: z.string().optional(),
 
-  BANK_ACCOUNT_NO: z.string().optional(),
-  BANK_ACCOUNT_NAME: z.string().optional(),
-  BANK_BIN: z.string().optional(),
+  VIETQR_URL: z.string(),
+  VIETQR_CLIENT_ID: z.string(),
+  VIETQR_API_KEY: z.string(),
+  BANK_ACCOUNT_NO: z.string(),
+  BANK_ACCOUNT_NAME: z.string(),
+  BANK_BIN: z.string(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -50,6 +53,8 @@ export const env = {
     clientSecret: envVars.PAYPAL_CLIENT_SECRET,
   },
   vietqr: {
+    clientId: envVars.VIETQR_CLIENT_ID,
+    apiKey: envVars.VIETQR_API_KEY,
     bankAccountNo: envVars.BANK_ACCOUNT_NO,
     bankAccountName: envVars.BANK_ACCOUNT_NAME,
     bankBin: envVars.BANK_BIN,

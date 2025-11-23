@@ -19,7 +19,6 @@ export class PaypalStrategy implements PaymentStrategy {
   async createPaymentRequest(order: Order): Promise<PaymentResponse> {
     const accessToken = await this.getAccessToken();
 
-    // Convert VND to USD (Approximate exchange rate for demo)
     const amountUSD = (order.totalAmount / 24000).toFixed(2);
 
     try {

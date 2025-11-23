@@ -9,6 +9,7 @@ export class PayOrderController {
 
   @Post('create')
   create(@Body() dto: PaymentRequestDto) {
+    console.log('Payment Request DTO:', dto);
     return this.payOrderService.initiatePayment(dto.orderId, dto.method);
   }
 
