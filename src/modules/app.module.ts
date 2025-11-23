@@ -5,6 +5,7 @@ import dataSource from '../libs/typeorm.config';
 import { ProductsModule } from './products/products.module';
 import { PlaceOrderModule } from './place-order/place-order.module';
 import { PayOrderModule } from './pay-order/pay-order.module';
+import { HealthCheckModule } from './health-check/health-check.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PayOrderModule } from './pay-order/pay-order.module';
     ProductsModule,
     PlaceOrderModule,
     PayOrderModule,
+    HealthCheckModule,
   ],
   controllers: [],
   providers: [],
