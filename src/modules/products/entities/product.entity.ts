@@ -4,7 +4,7 @@ export enum ProductType {
   BOOK = 'BOOK',
   CD = 'CD',
   DVD = 'DVD',
-  LP = 'LP',
+  NEWSPAPER = 'NEWSPAPER',
 }
 
 @Entity()
