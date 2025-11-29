@@ -8,7 +8,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - backend-net
 
@@ -24,6 +25,12 @@ services:
       - mysql-data:/var/lib/mysql
     networks:
       - backend-net
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"-u", "root", "-p12345678", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
 volumes:
   mysql-data:
