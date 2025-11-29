@@ -1,8 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/guards/jwt.guard';
+import { RolesGuard } from 'src/guards/role.guard';
+import { Roles } from 'src/decorators/roles.decorator';
 
 @Controller('products')
 export class ProductsController {
@@ -11,6 +14,8 @@ export class ProductsController {
   @Post()
   @ApiResponse({status: 200, description: "Create succesful!"})
   @ApiResponse({status: 400, description: "Create failed!"})
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("admin")
   create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);
   }
