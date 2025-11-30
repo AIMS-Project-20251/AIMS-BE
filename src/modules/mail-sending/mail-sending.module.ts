@@ -6,6 +6,8 @@ import { join } from 'path';
 import { Order } from '../place-order/entities/order.entity';
 import { OrderItem } from '../place-order/entities/order-item.entity';
 import { Product } from '../products/entities/product.entity';
+import { MailSendingService } from './mail-sending.service';
+import { MailSendingController } from './mail-sending.controller';
 
 @Module({
   imports: [
@@ -16,8 +18,8 @@ import { Product } from '../products/entities/product.entity';
         port: 465,
         secure: true,
         auth: {
-          user: process.env.MAIL_USER,
-          pass: process.env.MAIL_PASSWORD, 
+          user: "bang.nq189@gmail.com",
+          pass: "skee fkiu zqmk pvdk", 
         },
       },
       template: {
@@ -29,5 +31,8 @@ import { Product } from '../products/entities/product.entity';
       },
     }),
   ],
+  controllers: [MailSendingController],
+  providers: [MailSendingService],
+  exports: [MailSendingService]
 })
 export class MailSendingModule {}
