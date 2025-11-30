@@ -12,7 +12,10 @@ const envSchema = z.object({
   MAIL_APP_PASSWORD: z.string(),
   MAIL_TIME: z.string().default('1h'),
 
-  MYSQL_URL: z.string(),
+  DB_PORT: z.coerce.number(),
+  DB_HOST: z.string(),
+  DB_PASSWORD: z.string(),
+  DB_NAME: z.string(),
 
   PAYPAL_URL: z.string().optional(),
   PAYPAL_CLIENT_ID: z.string().optional(),
@@ -45,7 +48,10 @@ export const env = {
     time: envVars.MAIL_TIME,
   },
   mysql: {
-    url: envVars.MYSQL_URL,
+    port: envVars.DB_PORT,
+    host: envVars.DB_HOST,
+    password: envVars.DB_PASSWORD,
+    database: envVars.DB_NAME,
   },
   paypal: {
     url: envVars.PAYPAL_URL,

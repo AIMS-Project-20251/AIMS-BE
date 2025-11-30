@@ -17,16 +17,16 @@ services:
     image: mysql:latest
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 12345678
-      MYSQL_DATABASE: aims
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
     ports:
-      - "3306:3306"
+      - "${DB_PORT}:${DB_PORT}"
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
       - backend-net
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"-u", "root", "-p12345678", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin" ,"-u", "root", "-p${DB_PASSWORD}", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
       retries: 10
