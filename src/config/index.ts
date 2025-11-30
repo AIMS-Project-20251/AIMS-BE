@@ -6,7 +6,7 @@ export const isLocal = process.env.NODE_ENV === 'local';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['production', 'development', 'test', 'local', 'staging']),
-  PORT: z.coerce.number().default(3000),
+  PORT: z.coerce.number().default(8080),
 
   MAIL_SENDER: z.string(),
   MAIL_APP_PASSWORD: z.string(),
