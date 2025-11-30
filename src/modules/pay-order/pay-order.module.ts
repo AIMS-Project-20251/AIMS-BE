@@ -5,11 +5,11 @@ import { PaypalStrategy } from './strategies/paypal.strategy';
 import { VietqrStrategy } from './strategies/vietqr.strategy';
 import { PlaceOrderModule } from '../place-order/place-order.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Invoice } from './entities/invoice.entity';
+import { Payment } from './entities/payment.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Invoice]),
+    TypeOrmModule.forFeature([Payment]),
     PlaceOrderModule,
   ],
   controllers: [PayOrderController],

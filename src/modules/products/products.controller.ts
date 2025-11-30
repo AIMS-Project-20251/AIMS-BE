@@ -14,7 +14,7 @@ export class ProductsController {
   @Post()
   @ApiResponse({status: 200, description: "Create succesful!"})
   @ApiResponse({status: 400, description: "Create failed!"})
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("admin")
   create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);

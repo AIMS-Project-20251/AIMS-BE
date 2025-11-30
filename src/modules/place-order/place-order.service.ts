@@ -53,7 +53,7 @@ export class PlaceOrderService {
       vatAmount,
       shippingFee,
       totalAmount,
-      status: OrderStatus.PENDING,
+      status: OrderStatus.CREATED,
       items: orderItems
     });
 

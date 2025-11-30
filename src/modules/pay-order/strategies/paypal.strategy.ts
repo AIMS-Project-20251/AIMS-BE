@@ -3,6 +3,9 @@ import axios from 'axios';
 import { PaymentStrategy, PaymentResponse } from './payment.strategy.interface';
 import { Order } from '../../place-order/entities/order.entity';
 import { env } from 'src/config';
+import { Payment } from '../entities/payment.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PaypalStrategy implements PaymentStrategy {
@@ -10,7 +13,7 @@ export class PaypalStrategy implements PaymentStrategy {
   private readonly clientId: string | undefined;
   private readonly clientSecret: string | undefined;
 
-  constructor() {
+  constructor(@InjectRepository(Payment) private paymentRepo: Repository<Payment>) {
     this.baseUrl = env.paypal.url;
     this.clientId = env.paypal.clientId;
     this.clientSecret = env.paypal.clientSecret;
@@ -36,8 +39,10 @@ export class PaypalStrategy implements PaymentStrategy {
             },
           ],
           application_context: {
-            return_url: `http://localhost:3000/pay-order/success`,
-            cancel_url: `http://localhost:3000/pay-order/cancel`,
+            brand_name: "AIMS",
+            user_action: "PAY_NOW",
+            return_url: `http://localhost:${env.port}/api/pay-order/comfirm-paypal`,
+            cancel_url: `http://localhost:${env.port}/api/pay-order/cancel-paypal`,
           },
         },
         {
@@ -49,6 +54,17 @@ export class PaypalStrategy implements PaymentStrategy {
       );
 
       const approveLink = response.data.links.find((link: any) => link.rel === 'approve');
+      const url = new URL(approveLink.href);
+      const transactionId = url.searchParams.get('token') ?? undefined;
+
+      const payment = this.paymentRepo.create({
+        method: 'PAYPAL',
+        transactionId: transactionId,
+        amount: order.totalAmount,
+        order: order,
+      });
+
+      this.paymentRepo.save(payment);
 
       return {
         method: 'PAYPAL',
@@ -73,7 +89,7 @@ export class PaypalStrategy implements PaymentStrategy {
           },
         },
       );
-      
+
       if (response.data.status === 'COMPLETED') {
         return response.data;
       } else {
@@ -81,6 +97,32 @@ export class PaypalStrategy implements PaymentStrategy {
       }
     } catch (error) {
       throw new InternalServerErrorException('Failed to capture PayPal payment');
+    }
+  }
+
+  async refundPayment(captureId: string, amountUSD?: string) {
+    const accessToken = await this.getAccessToken();
+
+    try {
+      const body = amountUSD
+        ? { amount: { value: amountUSD, currency_code: "USD" } }
+        : {};
+
+      const response = await axios.post(
+        `${this.baseUrl}/v2/payments/captures/${captureId}/refund`,
+        body,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      return response.data;
+    } catch (err) {
+      console.log(err.response?.data);
+      throw new InternalServerErrorException("Failed to refund payment");
     }
   }
 

@@ -1,11 +1,11 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Query, Get } from '@nestjs/common';
 import { PayOrderService } from './pay-order.service';
 import { PaymentRequestDto } from './dto/payment-request.dto';
 import { ApiBody } from '@nestjs/swagger';
 
 @Controller('pay-order')
 export class PayOrderController {
-  constructor(private readonly payOrderService: PayOrderService) {}
+  constructor(private readonly payOrderService: PayOrderService) { }
 
   @Post('create')
   create(@Body() dto: PaymentRequestDto) {
@@ -13,12 +13,24 @@ export class PayOrderController {
     return this.payOrderService.initiatePayment(dto.orderId, dto.method);
   }
 
-  @Post('confirm-paypal')
-  confirmPaypal(@Body('paypalOrderId') paypalOrderId: string) {
-    return this.payOrderService.confirmPaypalTransaction(paypalOrderId);
+  @Get('confirm-paypal')
+  confirmPaypal(@Query('token') token: string) {
+    return this.payOrderService.confirmPaypalTransaction(token);
   }
 
-  @Post('confirm-vietqr')
+  @Get('cancel-paypal')
+  cancelPaypal(@Query('token') token: string) {
+    return this.payOrderService.cancelPaypalTransaction(token);
+  }
+
+  @Post('refund-paypal')
+  refundPaypal(
+    @Body('captureId') captureId: string,
+    @Body('amountUSD') amountUSD?: string,
+  ) {
+    return this.payOrderService.refund(captureId, amountUSD);
+  }
+
   @ApiBody({
     schema: {
       type: 'object',
@@ -28,7 +40,8 @@ export class PayOrderController {
       required: ['vietQROrderId'],
     },
   })
-  confirmVietqr(@Body('vietQROrderId') vietQROrderId: string) {
-    return this.payOrderService.comfirmVietqrTransaction(vietQROrderId);
+  @Post('confirm-vietqr')
+  confirmVietqr(@Query('token') token: string) {
+    return this.payOrderService.comfirmVietqrTransaction(token);
   }
 }

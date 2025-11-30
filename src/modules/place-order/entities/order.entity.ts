@@ -1,10 +1,12 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 import { OrderItem } from './order-item.entity';
+import { Payment } from 'src/modules/pay-order/entities/payment.entity';
 
 export enum OrderStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
+  CREATED = 'CREATED',
+  PAID = 'PAID',
+  REFUNDED = 'REFUNDED',
+  DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
 }
 
@@ -40,11 +42,14 @@ export class Order {
   @Column('decimal')
   totalAmount: number;
 
-  @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
+  @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.CREATED })
   status: OrderStatus;
 
   @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
   items: OrderItem[];
+
+  @OneToMany(() => Payment, payment => payment.order, { cascade: true })
+  payments: Payment[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PaymentStrategy, PaymentResponse } from './payment.strategy.interface';
 import { Order } from '../../place-order/entities/order.entity';
 import axios from 'axios';
+import { Payment } from '../entities/payment.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class VietqrStrategy implements PaymentStrategy {
@@ -12,7 +15,7 @@ export class VietqrStrategy implements PaymentStrategy {
   private bankName: string | undefined;
   private acqId: string | undefined;
 
-  constructor() {
+  constructor(@InjectRepository(Payment) private paymentRepo: Repository<Payment>) {
     this.vietqrUrl = process.env.VIETQR_URL;
     this.clientId = process.env.VIETQR_CLIENT_ID;
     this.apiKey = process.env.VIETQR_API_KEY;
@@ -43,6 +46,14 @@ export class VietqrStrategy implements PaymentStrategy {
           'x-client-id': this.clientId!,
           'x-api-key': this.apiKey!,
         }})
+
+      const payment = this.paymentRepo.create({ 
+        method: 'VIETQR',
+        amount: order.totalAmount,
+        order: order,
+      });
+
+      this.paymentRepo.save(payment);
 
       return {
         method: 'VIETQR',
