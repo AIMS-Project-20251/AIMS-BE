@@ -68,6 +68,7 @@ export class PaypalStrategy implements PaymentStrategy {
 
       return {
         method: 'PAYPAL',
+        transactionId: payment.transactionId,
         paymentUrl: approveLink.href,
       };
     } catch (error) {

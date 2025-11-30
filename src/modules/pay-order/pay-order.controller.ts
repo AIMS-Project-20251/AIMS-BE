@@ -2,6 +2,7 @@ import { Controller, Post, Body, Query, Get } from '@nestjs/common';
 import { PayOrderService } from './pay-order.service';
 import { PaymentRequestDto } from './dto/payment-request.dto';
 import { ApiBody } from '@nestjs/swagger';
+import { ConfirmVietqrDto } from './dto/confirm-vietqr.dto';
 
 @Controller('pay-order')
 export class PayOrderController {
@@ -35,13 +36,15 @@ export class PayOrderController {
     schema: {
       type: 'object',
       properties: {
-        vietQROrderId: { type: 'number', example: 123 },
+        vietQROrderId: { type: 'string', example: "123" },
       },
       required: ['vietQROrderId'],
     },
   })
   @Post('confirm-vietqr')
-  confirmVietqr(@Query('token') token: string) {
-    return this.payOrderService.comfirmVietqrTransaction(token);
+  confirmVietqr(@Body() body: ConfirmVietqrDto) {
+    return this.payOrderService.comfirmVietqrTransaction(body.vietQROrderId);
   }
+
+  
 }

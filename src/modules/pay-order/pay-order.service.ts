@@ -115,6 +115,8 @@ export class PayOrderService {
     const order = payment.order;
     order.status = OrderStatus.PAID;
     await this.orderRepo.save(order);
+
+    return { orderId: order.id };
   }
 
   async refund(captureId: string, amountUSD?: string) {

@@ -26,6 +26,8 @@ export class VietqrStrategy implements PaymentStrategy {
 
   async createPaymentRequest(order: Order): Promise<PaymentResponse> {
     try {
+      const fakeBankTransId = `VQR-${Date.now()}`;
+
       const itemDetails = order.items
       .map((item) => `${item.product.title}`)
       .join(', ');
@@ -51,12 +53,14 @@ export class VietqrStrategy implements PaymentStrategy {
         method: 'VIETQR',
         amount: order.totalAmount,
         order: order,
+        transactionId: fakeBankTransId
       });
 
       this.paymentRepo.save(payment);
 
       return {
         method: 'VIETQR',
+        transactionId: payment.transactionId,
         qrData: response.data.data.qrDataURL,
       };
     } catch (error) {
