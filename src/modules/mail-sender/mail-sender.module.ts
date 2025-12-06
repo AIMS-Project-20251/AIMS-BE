@@ -6,8 +6,7 @@ import { join } from 'path';
 import { Order } from '../place-order/entities/order.entity';
 import { OrderItem } from '../place-order/entities/order-item.entity';
 import { Product } from '../products/entities/product.entity';
-import { MailSendingService } from './mail-sending.service';
-import { MailSendingController } from './mail-sending.controller';
+import { MailSenderService } from './mail-sender.service';
 
 @Module({
   imports: [
@@ -31,8 +30,7 @@ import { MailSendingController } from './mail-sending.controller';
       },
     }),
   ],
-  controllers: [MailSendingController],
-  providers: [MailSendingService],
-  exports: [MailSendingService]
+  providers: [MailSenderService],
+  exports: [MailSenderService]
 })
-export class MailSendingModule {}
+export class MailSenderModule {}

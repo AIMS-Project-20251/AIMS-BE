@@ -5,7 +5,7 @@ import { Repository } from "typeorm";
 import { MailerService } from "@nestjs-modules/mailer";
 
 @Injectable()
-export class MailSendingService {
+export class MailSenderService {
     constructor(
         @InjectRepository(Order) private orderRepo : Repository<Order>,
         private readonly mailerService: MailerService

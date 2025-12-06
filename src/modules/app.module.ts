@@ -6,7 +6,7 @@ import { ProductsModule } from './products/products.module';
 import { PlaceOrderModule } from './place-order/place-order.module';
 import { PayOrderModule } from './pay-order/pay-order.module';
 import { HealthCheckModule } from './health-check/health-check.module';
-import { MailSendingModule } from './mail-sending/mail-sending.module';
+import { MailSenderModule } from './mail-sender/mail-sender.module';
 
 @Module({
   imports: [
@@ -19,7 +19,7 @@ import { MailSendingModule } from './mail-sending/mail-sending.module';
     PlaceOrderModule,
     PayOrderModule,
     HealthCheckModule,
-    MailSendingModule
+    MailSenderModule
   ],
   controllers: [],
   providers: [],

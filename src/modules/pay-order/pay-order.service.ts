@@ -6,6 +6,7 @@ import { PaypalStrategy } from './strategies/paypal.strategy';
 import { VietqrStrategy } from './strategies/vietqr.strategy';
 import { PaymentStrategy, PaymentResponse } from './strategies/payment.strategy.interface';
 import { Payment } from './entities/payment.entity';
+import { MailSenderService } from '../mail-sender/mail-sender.service';
 
 @Injectable()
 export class PayOrderService {
@@ -16,6 +17,7 @@ export class PayOrderService {
     @InjectRepository(Payment) private paymnetRepo: Repository<Payment>,
     private readonly paypalStrategy: PaypalStrategy,
     private readonly vietqrStrategy: VietqrStrategy,
+    private readonly mailSenderService: MailSenderService,
   ) {
     this.strategies = {
       PAYPAL: this.paypalStrategy,
@@ -70,6 +72,9 @@ export class PayOrderService {
 
     const order = payment.order;
     order.status = OrderStatus.PAID;
+
+    this.mailSenderService.sendOrderSuccessEmail(order.id);
+
     await this.orderRepo.save(order);
   }
 
@@ -115,6 +120,8 @@ export class PayOrderService {
     const order = payment.order;
     order.status = OrderStatus.PAID;
     await this.orderRepo.save(order);
+
+    this.mailSenderService.sendOrderSuccessEmail(order.id);
 
     return { orderId: order.id };
   }
