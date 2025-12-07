@@ -8,6 +8,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['production', 'development', 'test', 'local', 'staging']),
   PORT: z.coerce.number().default(8080),
 
+  FE_URL: z.string(),
+
   MAIL_SENDER: z.string(),
   MAIL_APP_PASSWORD: z.string(),
   MAIL_TIME: z.string().default('1h'),
@@ -42,6 +44,7 @@ const envVars = parsed.data;
 export const env = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+  fe_url: envVars.FE_URL,
   mailer: {
     sender: envVars.MAIL_SENDER,
     password: envVars.MAIL_APP_PASSWORD,
@@ -64,5 +67,5 @@ export const env = {
     bankAccountNo: envVars.BANK_ACCOUNT_NO,
     bankAccountName: envVars.BANK_ACCOUNT_NAME,
     bankBin: envVars.BANK_BIN,
-  }, 
+  },
 };

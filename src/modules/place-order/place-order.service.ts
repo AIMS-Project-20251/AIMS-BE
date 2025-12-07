@@ -47,7 +47,9 @@ export class PlaceOrderService {
       const { product, repo } = found;
   
       if (product.quantity < itemDto.quantity) {
-        throw new BadRequestException(`Product ${product.title} is out of stock`);
+        throw new BadRequestException(
+          `Product ${product.title} is out of stock`,
+        );
       }
   
       product.quantity -= itemDto.quantity;
