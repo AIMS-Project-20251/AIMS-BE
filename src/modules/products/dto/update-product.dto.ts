@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNumber, IsObject, IsOptional, IsString, IsUrl, Min } from 'class-validator';
-import { ProductType } from '../entities/product.entity';
+import { ProductType } from '../entities/base-product.entity';
 
 export class UpdateProductDto {
   @ApiPropertyOptional({ nullable: true })
@@ -37,9 +37,8 @@ export class UpdateProductDto {
   imageUrl?: string | null;
 
   @ApiPropertyOptional({ nullable: true, enum: ProductType })
-  @IsOptional()
   @IsEnum(ProductType)
-  type?: ProductType | null;
+  type: ProductType;
 
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()

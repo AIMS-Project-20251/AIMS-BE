@@ -90,7 +90,7 @@ export class PayOrderService {
 
     const order = payment.order;
     order.status = OrderStatus.PAID;
-
+    
     await this.orderRepo.save(order);
 
     this.mailSenderService.sendOrderSuccessEmail(order.id);
@@ -143,11 +143,12 @@ export class PayOrderService {
 
     const order = payment.order;
     order.status = OrderStatus.PAID;
+    
     await this.orderRepo.save(order);
 
     this.mailSenderService.sendOrderSuccessEmail(order.id);
 
-    return { orderId: order.id };
+    return { success: true };
   }
 
   async refund(captureId: string, amountUSD?: string) {

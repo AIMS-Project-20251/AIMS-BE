@@ -1,4 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export enum ProductType {
   BOOK = 'BOOK',
@@ -7,8 +12,7 @@ export enum ProductType {
   NEWSPAPER = 'NEWSPAPER',
 }
 
-@Entity()
-export class Product {
+export abstract class BaseProduct {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -35,9 +39,6 @@ export class Product {
 
   @Column('float')
   weight: number;
-
-  @Column('json', { nullable: true })
-  attributes: any; 
 
   @Column({ default: true })
   isActive: boolean;

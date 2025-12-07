@@ -1,6 +1,6 @@
 import { IsString, IsNumber, IsEnum, IsOptional, IsObject, Min, IsUrl } from 'class-validator';
-import { ProductType } from '../entities/product.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ProductType } from '../entities/base-product.entity';
 
 export class CreateProductDto {
   @ApiProperty()
