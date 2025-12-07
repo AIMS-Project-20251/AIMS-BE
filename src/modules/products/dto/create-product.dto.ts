@@ -1,6 +1,12 @@
-import { IsString, IsNumber, IsEnum, IsOptional, IsObject, Min, IsUrl } from 'class-validator';
+import { IsString, IsNumber, Min, IsEnum, IsOptional, IsObject } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ProductType } from '../entities/base-product.entity';
+
+export enum ProductType {
+  BOOK = 'BOOK',
+  CD = 'CD',
+  DVD = 'DVD',
+  NEWSPAPER = 'NEWSPAPER',
+}
 
 export class CreateProductDto {
   @ApiProperty()
@@ -27,10 +33,10 @@ export class CreateProductDto {
   quantity: number;
 
   @ApiProperty()
-  @IsUrl()
+  @IsString()
   imageUrl: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: ProductType })
   @IsEnum(ProductType)
   type: ProductType;
 
@@ -39,7 +45,7 @@ export class CreateProductDto {
   @Min(0)
   weight: number;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: Object, description: 'Loại này chứa các thuộc tính đặc thù của sản phẩm theo type' })
   @IsOptional()
   @IsObject()
   attributes?: Record<string, any>;

@@ -8,14 +8,13 @@ import {
   Delete,
   Query,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/guards/jwt.guard';
-import { RolesGuard } from 'src/guards/role.guard';
-import { Roles } from 'src/decorators/roles.decorator';
+import { ProductType } from './entities/base-product.entity';
 
 @Controller('products')
 export class ProductsController {
@@ -24,10 +23,19 @@ export class ProductsController {
   @Post()
   @ApiResponse({ status: 200, description: 'Create succesful!' })
   @ApiResponse({ status: 400, description: 'Create failed!' })
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
   create(@Body() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
+    switch (createProductDto.type) {
+      case ProductType.BOOK:
+        return this.productsService.createBook(createProductDto);
+      case ProductType.CD:
+        return this.productsService.createCD(createProductDto);
+      case ProductType.DVD:
+        return this.productsService.createDVD(createProductDto);
+      case ProductType.NEWSPAPER:
+        return this.productsService.createNewspaper(createProductDto);
+      default:
+        throw new BadRequestException(`Unknown product type: ${createProductDto['type']}`);
+    }
   }
 
   @Get()
@@ -49,12 +57,26 @@ export class ProductsController {
 
   @Patch(':id')
   @ApiBody({ type: UpdateProductDto })
-  @ApiResponse({ status: 200, description: 'Update succesful!' })
+  @ApiResponse({ status: 200, description: 'Update successful!' })
   @ApiResponse({ status: 400, description: 'Update failed!' })
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(+id, updateProductDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
+    switch (updateProductDto.type) {
+      case ProductType.BOOK:
+        return this.productsService.updateBook(+id, updateProductDto);
+      case ProductType.CD:
+        return this.productsService.updateCD(+id, updateProductDto);
+      case ProductType.DVD:
+        return this.productsService.updateDVD(+id, updateProductDto);
+      case ProductType.NEWSPAPER:
+        return this.productsService.updateNewspaper(+id, updateProductDto);
+      default:
+        throw new BadRequestException(`Unknown product type: ${updateProductDto['type']}`);
+    }
   }
-
+  
   @Delete(':id')
   @ApiResponse({ status: 200, description: 'Delete succesful!' })
   @ApiResponse({ status: 400, description: 'Delete failed!' })

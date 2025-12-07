@@ -1,53 +1,52 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNumber, IsObject, IsOptional, IsString, IsUrl, Min } from 'class-validator';
-import { ProductType } from '../entities/base-product.entity';
+import { IsString, IsNumber, Min, IsEnum, IsOptional, IsObject } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export enum ProductType {
+  BOOK = 'BOOK',
+  CD = 'CD',
+  DVD = 'DVD',
+  NEWSPAPER = 'NEWSPAPER',
+}
 
 export class UpdateProductDto {
-  @ApiPropertyOptional({ nullable: true })
-  @IsOptional()
+  @ApiProperty()
   @IsString()
-  title?: string | null;
+  title: string;
 
-  @ApiPropertyOptional({ nullable: true })
-  @IsOptional()
+  @ApiProperty()
   @IsString()
-  category?: string | null;
+  category: string;
 
-  @ApiPropertyOptional({ nullable: true })
-  @IsOptional()
+  @ApiProperty()
   @IsNumber()
   @Min(0)
-  originalValue?: number | null;
+  originalValue: number;
 
-  @ApiPropertyOptional({ nullable: true })
-  @IsOptional()
+  @ApiProperty()
   @IsNumber()
   @Min(0)
-  currentPrice?: number | null;
+  currentPrice: number;
 
-  @ApiPropertyOptional({ nullable: true })
-  @IsOptional()
+  @ApiProperty()
   @IsNumber()
   @Min(0)
-  quantity?: number | null;
+  quantity: number;
 
-  @ApiPropertyOptional({ nullable: true })
-  @IsOptional()
-  @IsUrl()
-  imageUrl?: string | null;
+  @ApiProperty()
+  @IsString()
+  imageUrl: string;
 
-  @ApiPropertyOptional({ nullable: true, enum: ProductType })
+  @ApiProperty({ enum: ProductType })
   @IsEnum(ProductType)
   type: ProductType;
 
-  @ApiPropertyOptional({ nullable: true })
-  @IsOptional()
+  @ApiProperty()
   @IsNumber()
   @Min(0)
-  weight?: number | null;
+  weight: number;
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ type: Object, description: 'Loại này chứa các thuộc tính đặc thù của sản phẩm theo type' })
   @IsOptional()
   @IsObject()
-  attributes?: Record<string, any> | null;
+  attributes?: Record<string, any>;
 }

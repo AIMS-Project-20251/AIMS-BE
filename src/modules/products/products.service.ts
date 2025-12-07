@@ -73,27 +73,198 @@ export class ProductsService {
     throw new NotFoundException('Product not found');
   }
 
-  async create(dto: CreateProductDto) {
+  async createBook(dto: CreateProductDto) {
+    if (dto.type !== ProductType.BOOK) {
+      throw new BadRequestException('Invalid type for book');
+    }
+  
     this.validatePriceRules(dto.currentPrice, dto.originalValue);
-
-    const repo = this.getRepoByType(dto.type);
-    const product = repo.create(dto);
+  
+    const repo = this.bookRepo;
+    const product = repo.create({
+      ...dto,
+      authors: dto.attributes?.authors,
+      coverType: dto.attributes?.coverType,
+      publisher: dto.attributes?.publisher,
+      publicationDate: dto.attributes?.publicationDate,
+      pages: dto.attributes?.pages,
+      language: dto.attributes?.language,
+      genre: dto.attributes?.genre,
+    });
+  
+    return repo.save(product);
+  }
+  
+  async createCD(dto: CreateProductDto) {
+    if (dto.type !== ProductType.CD) {
+      throw new BadRequestException('Invalid type for CD');
+    }
+  
+    this.validatePriceRules(dto.currentPrice, dto.originalValue);
+  
+    const repo = this.cdRepo;
+    const product = repo.create({
+      ...dto,
+      artists: dto.attributes?.artists,
+      recordLabel: dto.attributes?.recordLabel,
+      tracks: dto.attributes?.tracks,
+      genre: dto.attributes?.genre,
+      releaseDate: dto.attributes?.releaseDate,
+    });
+  
+    return repo.save(product);
+  }
+  
+  async createDVD(dto: CreateProductDto) {
+    if (dto.type !== ProductType.DVD) {
+      throw new BadRequestException('Invalid type for DVD');
+    }
+  
+    this.validatePriceRules(dto.currentPrice, dto.originalValue);
+  
+    const repo = this.dvdRepo;
+    const product = repo.create({
+      ...dto,
+      discType: dto.attributes?.discType,
+      director: dto.attributes?.director,
+      runtime: dto.attributes?.runtime,
+      studio: dto.attributes?.studio,
+      language: dto.attributes?.language,
+      subtitles: dto.attributes?.subtitles,
+      releaseDate: dto.attributes?.releaseDate,
+      genre: dto.attributes?.genre,
+    });
+  
+    return repo.save(product);
+  }
+  
+  async createNewspaper(dto: CreateProductDto) {
+    if (dto.type !== ProductType.NEWSPAPER) {
+      throw new BadRequestException('Invalid type for newspaper');
+    }
+  
+    this.validatePriceRules(dto.currentPrice, dto.originalValue);
+  
+    const repo = this.newspaperRepo;
+    const product = repo.create({
+      ...dto,
+      editorInChief: dto.attributes?.editorInChief,
+      publisher: dto.attributes?.publisher,
+      publicationDate: dto.attributes?.publicationDate,
+      issueNumber: dto.attributes?.issueNumber,
+      publicationFrequency: dto.attributes?.publicationFrequency,
+      issn: dto.attributes?.issn,
+      language: dto.attributes?.language,
+      sections: dto.attributes?.sections,
+    });
+  
     return repo.save(product);
   }
 
-  async update(id: number, dto: UpdateProductDto) {
-    const repo = this.getRepoByType(dto.type);
-    const product = await this.findOne(id);
-
+  async updateBook(id: number, dto: CreateProductDto) {
+    if (dto.type !== ProductType.BOOK) {
+      throw new BadRequestException('Invalid type for book');
+    }
+  
+    const product = await this.bookRepo.findOne({ where: { id } });
+    if (!product) throw new NotFoundException('Book not found');
+  
     const newCurrent = dto.currentPrice ?? product.currentPrice;
     const newOriginal = dto.originalValue ?? product.originalValue;
-
     this.validatePriceRules(newCurrent, newOriginal);
-
-    Object.assign(product, dto);
-    return repo.save(product);
+  
+    Object.assign(product, {
+      ...dto,
+      authors: dto.attributes?.authors,
+      coverType: dto.attributes?.coverType,
+      publisher: dto.attributes?.publisher,
+      publicationDate: dto.attributes?.publicationDate,
+      pages: dto.attributes?.pages,
+      language: dto.attributes?.language,
+      genre: dto.attributes?.genre,
+    });
+  
+    return this.bookRepo.save(product);
   }
-
+  
+  async updateCD(id: number, dto: CreateProductDto) {
+    if (dto.type !== ProductType.CD) {
+      throw new BadRequestException('Invalid type for CD');
+    }
+  
+    const product = await this.cdRepo.findOne({ where: { id } });
+    if (!product) throw new NotFoundException('CD not found');
+  
+    const newCurrent = dto.currentPrice ?? product.currentPrice;
+    const newOriginal = dto.originalValue ?? product.originalValue;
+    this.validatePriceRules(newCurrent, newOriginal);
+  
+    Object.assign(product, {
+      ...dto,
+      artists: dto.attributes?.artists,
+      recordLabel: dto.attributes?.recordLabel,
+      tracks: dto.attributes?.tracks,
+      genre: dto.attributes?.genre,
+      releaseDate: dto.attributes?.releaseDate,
+    });
+  
+    return this.cdRepo.save(product);
+  }
+  
+  async updateDVD(id: number, dto: CreateProductDto) {
+    if (dto.type !== ProductType.DVD) {
+      throw new BadRequestException('Invalid type for DVD');
+    }
+  
+    const product = await this.dvdRepo.findOne({ where: { id } });
+    if (!product) throw new NotFoundException('DVD not found');
+  
+    const newCurrent = dto.currentPrice ?? product.currentPrice;
+    const newOriginal = dto.originalValue ?? product.originalValue;
+    this.validatePriceRules(newCurrent, newOriginal);
+  
+    Object.assign(product, {
+      ...dto,
+      discType: dto.attributes?.discType,
+      director: dto.attributes?.director,
+      runtime: dto.attributes?.runtime,
+      studio: dto.attributes?.studio,
+      language: dto.attributes?.language,
+      subtitles: dto.attributes?.subtitles,
+      releaseDate: dto.attributes?.releaseDate,
+      genre: dto.attributes?.genre,
+    });
+  
+    return this.dvdRepo.save(product);
+  }
+  
+  async updateNewspaper(id: number, dto: CreateProductDto) {
+    if (dto.type !== ProductType.NEWSPAPER) {
+      throw new BadRequestException('Invalid type for newspaper');
+    }
+  
+    const product = await this.newspaperRepo.findOne({ where: { id } });
+    if (!product) throw new NotFoundException('Newspaper not found');
+  
+    const newCurrent = dto.currentPrice ?? product.currentPrice;
+    const newOriginal = dto.originalValue ?? product.originalValue;
+    this.validatePriceRules(newCurrent, newOriginal);
+  
+    Object.assign(product, {
+      ...dto,
+      editorInChief: dto.attributes?.editorInChief,
+      publisher: dto.attributes?.publisher,
+      publicationDate: dto.attributes?.publicationDate,
+      issueNumber: dto.attributes?.issueNumber,
+      publicationFrequency: dto.attributes?.publicationFrequency,
+      issn: dto.attributes?.issn,
+      language: dto.attributes?.language,
+      sections: dto.attributes?.sections,
+    });
+  
+    return this.newspaperRepo.save(product);
+  }
+  
   async remove(id: number) {
     const product = await this.findOne(id);
     const repo = this.getRepoByType(product.type);

@@ -9,7 +9,7 @@ export enum CoverType {
 @Entity('books')
 export class Book extends BaseProduct {
   @Column()
-  authors: string; // hoặc string[] nếu bạn muốn list
+  authors: string;
 
   @Column({ type: 'enum', enum: CoverType })
   coverType: CoverType;
