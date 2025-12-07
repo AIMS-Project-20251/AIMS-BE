@@ -3,14 +3,27 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
+
 import { Order } from '../place-order/entities/order.entity';
 import { OrderItem } from '../place-order/entities/order-item.entity';
-import { Product } from '../products/entities/product.entity';
+
+import { Book } from '../products/entities/book.entity';
+import { CD } from '../products/entities/cd.entity';
+import { DVD } from '../products/entities/dvd.entity';
+import { Newspaper } from '../products/entities/newspaper.entity';
+
 import { MailSenderService } from './mail-sender.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, Product]),
+    TypeOrmModule.forFeature([
+      Order,
+      OrderItem,
+      Book,
+      CD,
+      DVD,
+      Newspaper
+    ]),
     MailerModule.forRoot({
       transport: {
         host: 'smtp.gmail.com',
@@ -18,11 +31,11 @@ import { MailSenderService } from './mail-sender.service';
         secure: true,
         auth: {
           user: "bang.nq189@gmail.com",
-          pass: "skee fkiu zqmk pvdk", 
+          pass: "skee fkiu zqmk pvdk",
         },
       },
       template: {
-        dir: join(__dirname, '..', '..', 'templates'), 
+        dir: join(__dirname, '..', '..', 'templates'),
         adapter: new HandlebarsAdapter(),
         options: {
           strict: true,
@@ -31,6 +44,6 @@ import { MailSenderService } from './mail-sender.service';
     }),
   ],
   providers: [MailSenderService],
-  exports: [MailSenderService]
+  exports: [MailSenderService],
 })
 export class MailSenderModule {}

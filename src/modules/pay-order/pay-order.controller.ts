@@ -45,6 +45,4 @@ export class PayOrderController {
   confirmVietqr(@Body() body: ConfirmVietqrDto) {
     return this.payOrderService.comfirmVietqrTransaction(body.vietQROrderId);
   }
-
-  
 }
