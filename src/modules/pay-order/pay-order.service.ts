@@ -14,6 +14,10 @@ import {
 } from './strategies/payment.strategy.interface';
 import { Payment } from './entities/payment.entity';
 import { MailSenderService } from '../mail-sender/mail-sender.service';
+import { Book } from '../products/entities/book.entity';
+import { CD } from '../products/entities/cd.entity';
+import { DVD } from '../products/entities/dvd.entity';
+import { Newspaper } from '../products/entities/newspaper.entity';
 
 @Injectable()
 export class PayOrderService {
@@ -22,6 +26,10 @@ export class PayOrderService {
   constructor(
     @InjectRepository(Order) private orderRepo: Repository<Order>,
     @InjectRepository(Payment) private paymnetRepo: Repository<Payment>,
+    @InjectRepository(Book) private bookRepo: Repository<Book>,
+    @InjectRepository(CD) private cdRepo: Repository<CD>,
+    @InjectRepository(DVD) private dvdRepo: Repository<DVD>,
+    @InjectRepository(Newspaper) private newspaperRepo: Repository<Newspaper>,
     private readonly paypalStrategy: PaypalStrategy,
     private readonly vietqrStrategy: VietqrStrategy,
     private readonly mailSenderService: MailSenderService,
@@ -43,17 +51,36 @@ export class PayOrderService {
     if (!order) {
       throw new BadRequestException('Order not found');
     }
-
+  
+    for (const item of order.items) {
+      let product;
+      switch (item.productType) {
+        case 'BOOK':
+          product = await this.bookRepo.findOne({ where: { id: item.productId } });
+          break;
+        case 'CD':
+          product = await this.cdRepo.findOne({ where: { id: item.productId } });
+          break;
+        case 'DVD':
+          product = await this.dvdRepo.findOne({ where: { id: item.productId } });
+          break;
+        case 'NEWSPAPER':
+          product = await this.newspaperRepo.findOne({ where: { id: item.productId } });
+          break;
+      }
+      item['product'] = product;
+    }
+  
     const strategy = this.strategies[method];
-
     if (!strategy) {
       throw new BadRequestException(
         `Payment method ${method} is not supported`,
       );
     }
-
+  
     return strategy.createPaymentRequest(order);
   }
+  
 
   // async confirmPaypalTransaction(paypalOrderId: string) {
   //   const captureData = await this.paypalStrategy.capturePayment(paypalOrderId);

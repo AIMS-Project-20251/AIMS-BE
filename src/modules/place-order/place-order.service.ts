@@ -84,8 +84,7 @@ export class PlaceOrderService {
     });
   
     return this.orderRepo.save(order);
-  }
-  
+  } 
 
   async calculateFeesOnly(dto: CreateOrderDto) {
     let subtotal = 0;
@@ -113,6 +112,17 @@ export class PlaceOrderService {
       currency: 'VND',
     };
   }
+
+  async checkStatus(orderId: number) {
+    const order = await this.orderRepo.findOne({ where: { id: orderId } });
+  
+    if (!order) {
+      throw new BadRequestException(`Order ${orderId} not found`);
+    }
+  
+    return { status: order.status };
+  }
+  
 
   private async findProductEverywhere(id: number): 
   Promise<{ product: BaseProduct; repo: Repository<BaseProduct> } | null> 

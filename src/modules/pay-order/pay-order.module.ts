@@ -8,10 +8,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Payment } from './entities/payment.entity';
 import { MailSenderModule } from '../mail-sender/mail-sender.module';
 import { MailSenderService } from '../mail-sender/mail-sender.service';
+import { Book } from '../products/entities/book.entity';
+import { CD } from '../products/entities/cd.entity';
+import { DVD } from '../products/entities/dvd.entity';
+import { Newspaper } from '../products/entities/newspaper.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Payment]),
+    TypeOrmModule.forFeature([Payment, Book, CD, DVD, Newspaper]),
     PlaceOrderModule,
     MailSenderModule
   ],

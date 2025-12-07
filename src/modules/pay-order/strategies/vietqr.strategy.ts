@@ -29,7 +29,7 @@ export class VietqrStrategy implements PaymentStrategy {
       const fakeBankTransId = `VQR-${Date.now()}`;
 
       const itemDetails = order.items
-      .map((item) => `${item.product.title}`)
+      .map((item) => `#${item.productId}`)
       .join(', ');
 
       const payload = {
