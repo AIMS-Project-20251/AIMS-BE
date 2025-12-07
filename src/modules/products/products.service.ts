@@ -5,6 +5,20 @@ import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `Product` entity, repository (TypeORM)
+* - Reason: Service reads and writes `Product` entities via the repository and enforces price rules based on product data; depends on DTO shapes for create/update.
+*
+* 2. COHESION:
+* - Level: Functional cohesion
+* - Between components: `findAll`, `findOne`, `create`, `update`, `remove`, `validatePriceRules`
+* - Reason: All methods relate to product lifecycle management; helper `validatePriceRules` supports core functions, keeping the service cohesive.
+* ---------------------------------------------------------
+*/
 @Injectable()
 export class ProductsService {
   constructor(
@@ -67,18 +81,3 @@ export class ProductsService {
     }
   }
 }
-
-/*
-* MODULE DESIGN EVALUATION
-* ---------------------------------------------------------
-* 1. COUPLING:
-* - Level: Data/Stamp coupling
-* - With which class: `Product` entity, repository (TypeORM)
-* - Reason: Service reads and writes `Product` entities via the repository and enforces price rules based on product data; depends on DTO shapes for create/update.
-*
-* 2. COHESION:
-* - Level: Functional cohesion
-* - Between components: `findAll`, `findOne`, `create`, `update`, `remove`, `validatePriceRules`
-* - Reason: All methods relate to product lifecycle management; helper `validatePriceRules` supports core functions, keeping the service cohesive.
-* ---------------------------------------------------------
-*/

@@ -8,6 +8,20 @@ import { OrderItem } from '../place-order/entities/order-item.entity';
 import { Product } from '../products/entities/product.entity';
 import { MailSenderService } from './mail-sender.service';
 
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Common coupling
+* - With which class: `Order`, `OrderItem`, `Product`, `MailerModule`
+* - Reason: Module configures the mailer and registers the `MailSenderService`, importing entities needed for email content generation.
+*
+* 2. COHESION:
+* - Level: Procedural cohesion
+* - Between components: mailer configuration and DI bindings
+* - Reason: The module's purpose is to provide mail-sending capabilities and register required providers, so its composition is cohesive.
+* ---------------------------------------------------------
+*/
 @Module({
   imports: [
     TypeOrmModule.forFeature([Order, OrderItem, Product]),
@@ -34,18 +48,3 @@ import { MailSenderService } from './mail-sender.service';
   exports: [MailSenderService]
 })
 export class MailSenderModule {}
-
-/*
-* MODULE DESIGN EVALUATION
-* ---------------------------------------------------------
-* 1. COUPLING:
-* - Level: Common coupling
-* - With which class: `Order`, `OrderItem`, `Product`, `MailerModule`
-* - Reason: Module configures the mailer and registers the `MailSenderService`, importing entities needed for email content generation.
-*
-* 2. COHESION:
-* - Level: Procedural cohesion
-* - Between components: mailer configuration and DI bindings
-* - Reason: The module's purpose is to provide mail-sending capabilities and register required providers, so its composition is cohesive.
-* ---------------------------------------------------------
-*/

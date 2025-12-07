@@ -1,11 +1,6 @@
 import { Module } from '@nestjs/common';
 import { HealthCheckController } from './health-check.controller';
 
-@Module({
-  controllers: [HealthCheckController],
-})
-export class HealthCheckModule {}
-
 /*
 * MODULE DESIGN EVALUATION
 * ---------------------------------------------------------
@@ -20,3 +15,8 @@ export class HealthCheckModule {}
 * - Reason: Focused on wiring the health-check controller into the app.
 * ---------------------------------------------------------
 */
+@Module({
+  controllers: [HealthCheckController],
+})
+export class HealthCheckModule {}
+

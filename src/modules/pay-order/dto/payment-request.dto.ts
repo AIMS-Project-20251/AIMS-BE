@@ -1,16 +1,6 @@
 import { IsEnum, IsNumber } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class PaymentRequestDto {
-  @ApiProperty()
-  @IsNumber()
-  orderId: number;
-
-  @ApiProperty()
-  @IsEnum(['PAYPAL', 'VIETQR'])
-  method: 'PAYPAL' | 'VIETQR';
-}
-
 /*
 * MODULE DESIGN EVALUATION
 * ---------------------------------------------------------
@@ -25,3 +15,12 @@ export class PaymentRequestDto {
 * - Reason: The DTO encapsulates the exact data required to request a payment and nothing else.
 * ---------------------------------------------------------
 */
+export class PaymentRequestDto {
+  @ApiProperty()
+  @IsNumber()
+  orderId: number;
+
+  @ApiProperty()
+  @IsEnum(['PAYPAL', 'VIETQR'])
+  method: 'PAYPAL' | 'VIETQR';
+}

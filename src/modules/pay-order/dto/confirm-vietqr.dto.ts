@@ -1,11 +1,5 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-export class ConfirmVietqrDto {
-  @IsString()
-  @IsNotEmpty()
-  vietQROrderId: string;
-}
-
 /*
 * MODULE DESIGN EVALUATION
 * ---------------------------------------------------------
@@ -20,3 +14,9 @@ export class ConfirmVietqrDto {
 * - Reason: Single-purpose DTO that contains only the data necessary for VietQR confirmation.
 * ---------------------------------------------------------
 */
+export class ConfirmVietqrDto {
+  @IsString()
+  @IsNotEmpty()
+  vietQROrderId: string;
+}
+

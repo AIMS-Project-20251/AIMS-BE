@@ -8,6 +8,20 @@ import { PaymentStrategy, PaymentResponse } from './strategies/payment.strategy.
 import { Payment } from './entities/payment.entity';
 import { MailSenderService } from '../mail-sender/mail-sender.service';
 
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `Order` entity, `Payment` entity, `PaypalStrategy`, `VietqrStrategy`, `MailSenderService`, repositories
+* - Reason: Service coordinates between multiple strategies, repositories and mailer; depends on data shapes for orders/payments and calls into strategy implementations.
+*
+* 2. COHESION:
+* - Level: Communicational cohesion
+* - Between components: `initiatePayment`, confirmation/cancellation methods, `refund`
+* - Reason: All methods deal with payment workflows and coordinate strategy-specific behavior, making the service cohesive around payment orchestration.
+* ---------------------------------------------------------
+*/
 @Injectable()
 export class PayOrderService {
   private readonly strategies: Record<string, PaymentStrategy>;
@@ -130,18 +144,3 @@ export class PayOrderService {
     return this.paypalStrategy.refundPayment(captureId, amountUSD);
   }
 }
-
-/*
-* MODULE DESIGN EVALUATION
-* ---------------------------------------------------------
-* 1. COUPLING:
-* - Level: Stamp/Data coupling
-* - With which class: `Order` entity, `Payment` entity, `PaypalStrategy`, `VietqrStrategy`, `MailSenderService`, repositories
-* - Reason: Service coordinates between multiple strategies, repositories and mailer; depends on data shapes for orders/payments and calls into strategy implementations.
-*
-* 2. COHESION:
-* - Level: Communicational / Procedural cohesion
-* - Between components: `initiatePayment`, confirmation/cancellation methods, `refund`
-* - Reason: All methods deal with payment workflows and coordinate strategy-specific behavior, making the service cohesive around payment orchestration.
-* ---------------------------------------------------------
-*/

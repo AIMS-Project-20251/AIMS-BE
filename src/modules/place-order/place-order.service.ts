@@ -6,6 +6,20 @@ import { Product } from '../products/entities/product.entity';
 import { ShippingCalculator } from './shipping.calculator';
 import { CreateOrderDto } from './dto/create-order.dto';
 
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `Order` entity, `Product` entity, `ShippingCalculator`, `Repository` (TypeORM)
+* - Reason: The service manipulates `Order` and `Product` entities and uses repository interfaces; it depends on data shapes passed between those types. It also depends on the `ShippingCalculator` utility for shipping calculation.
+*
+* 2. COHESION:
+* - Level: Communicational cohesion
+* - Between components: `placeOrder`, `calculateFeesOnly`, constructor injections
+* - Reason: Methods operate on the same data (orders and order items) and share repositories; the service encapsulates order-placement responsibilities cohesively.
+* ---------------------------------------------------------
+*/
 @Injectable()
 export class PlaceOrderService {
   constructor(
@@ -85,18 +99,3 @@ export class PlaceOrderService {
     };
   }
 }
-
-/*
-* MODULE DESIGN EVALUATION
-* ---------------------------------------------------------
-* 1. COUPLING:
-* - Level: Stamp/Data coupling
-* - With which class: `Order` entity, `Product` entity, `ShippingCalculator`, `Repository` (TypeORM)
-* - Reason: The service manipulates `Order` and `Product` entities and uses repository interfaces; it depends on data shapes passed between those types. It also depends on the `ShippingCalculator` utility for shipping calculation.
-*
-* 2. COHESION:
-* - Level: Communicational / Functional cohesion
-* - Between components: `placeOrder`, `calculateFeesOnly`, constructor injections
-* - Reason: Methods operate on the same data (orders and order items) and share repositories; the service encapsulates order-placement responsibilities cohesively.
-* ---------------------------------------------------------
-*/

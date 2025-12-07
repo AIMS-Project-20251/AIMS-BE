@@ -7,6 +7,20 @@ import { Payment } from '../entities/payment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `Payment` entity, external PayPal API, `PaymentRepository`
+* - Reason: This strategy depends on external PayPal API and persists `Payment` entities via repository; it couples to HTTP/axios interactions and config.
+*
+* 2. COHESION:
+* - Level: Functional cohesion
+* - Between components: `createPaymentRequest`, `capturePayment`, `refundPayment`, `getAccessToken`
+* - Reason: All methods are concerned with PayPal-specific payment lifecycle; the class encapsulates PayPal integration.
+* ---------------------------------------------------------
+*/
 @Injectable()
 export class PaypalStrategy implements PaymentStrategy {
   private readonly baseUrl: string | undefined;
@@ -142,18 +156,3 @@ export class PaypalStrategy implements PaymentStrategy {
     return response.data.access_token;
   }
 }
-
-/*
-* MODULE DESIGN EVALUATION
-* ---------------------------------------------------------
-* 1. COUPLING:
-* - Level: Common/Data coupling
-* - With which class: `Payment` entity, external PayPal API, `PaymentRepository`
-* - Reason: This strategy depends on external PayPal API and persists `Payment` entities via repository; it couples to HTTP/axios interactions and config.
-*
-* 2. COHESION:
-* - Level: Functional cohesion
-* - Between components: `createPaymentRequest`, `capturePayment`, `refundPayment`, `getAccessToken`
-* - Reason: All methods are concerned with PayPal-specific payment lifecycle; the class encapsulates PayPal integration.
-* ---------------------------------------------------------
-*/
