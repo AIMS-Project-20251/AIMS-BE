@@ -13,7 +13,9 @@ export class PaypalStrategy implements PaymentStrategy {
   private readonly clientId: string | undefined;
   private readonly clientSecret: string | undefined;
 
-  constructor(@InjectRepository(Payment) private paymentRepo: Repository<Payment>) {
+  constructor(
+    @InjectRepository(Payment) private paymentRepo: Repository<Payment>,
+  ) {
     this.baseUrl = env.paypal.url;
     this.clientId = env.paypal.clientId;
     this.clientSecret = env.paypal.clientSecret;
@@ -39,10 +41,10 @@ export class PaypalStrategy implements PaymentStrategy {
             },
           ],
           application_context: {
-            brand_name: "AIMS",
-            user_action: "PAY_NOW",
-            return_url: `http://localhost:${env.port}/api/pay-order/comfirm-paypal`,
-            cancel_url: `http://localhost:${env.port}/api/pay-order/cancel-paypal`,
+            brand_name: 'AIMS',
+            user_action: 'PAY_NOW',
+            return_url: `http://${env.fe_url}/order-success`,
+            cancel_url: `http://${env.fe_url}/order-fail`,
           },
         },
         {
@@ -53,7 +55,9 @@ export class PaypalStrategy implements PaymentStrategy {
         },
       );
 
-      const approveLink = response.data.links.find((link: any) => link.rel === 'approve');
+      const approveLink = response.data.links.find(
+        (link: any) => link.rel === 'approve',
+      );
       const url = new URL(approveLink.href);
       const transactionId = url.searchParams.get('token') ?? undefined;
 
@@ -97,7 +101,9 @@ export class PaypalStrategy implements PaymentStrategy {
         throw new Error('Payment not completed');
       }
     } catch (error) {
-      throw new InternalServerErrorException('Failed to capture PayPal payment');
+      throw new InternalServerErrorException(
+        'Failed to capture PayPal payment',
+      );
     }
   }
 
@@ -106,7 +112,7 @@ export class PaypalStrategy implements PaymentStrategy {
 
     try {
       const body = amountUSD
-        ? { amount: { value: amountUSD, currency_code: "USD" } }
+        ? { amount: { value: amountUSD, currency_code: 'USD' } }
         : {};
 
       const response = await axios.post(
@@ -115,7 +121,7 @@ export class PaypalStrategy implements PaymentStrategy {
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         },
       );
@@ -123,12 +129,14 @@ export class PaypalStrategy implements PaymentStrategy {
       return response.data;
     } catch (err) {
       console.log(err.response?.data);
-      throw new InternalServerErrorException("Failed to refund payment");
+      throw new InternalServerErrorException('Failed to refund payment');
     }
   }
 
   private async getAccessToken(): Promise<string> {
-    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString(
+      'base64',
+    );
     const response = await axios.post(
       `${this.baseUrl}/v1/oauth2/token`,
       'grant_type=client_credentials',

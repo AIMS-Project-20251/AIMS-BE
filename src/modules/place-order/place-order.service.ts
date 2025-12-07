@@ -16,14 +16,20 @@ export class PlaceOrderService {
   async placeOrder(dto: CreateOrderDto) {
     let subtotal = 0;
     let totalWeight = 0;
-    const orderItems: { product: Product; quantity: number; price: number }[] = [];
+    const orderItems: { product: Product; quantity: number; price: number }[] =
+      [];
 
     for (const itemDto of dto.items) {
-      const product = await this.productRepo.findOne({ where: { id: itemDto.productId } });
-      
-      if (!product) throw new BadRequestException(`Product ${itemDto.productId} not found`);
+      const product = await this.productRepo.findOne({
+        where: { id: itemDto.productId },
+      });
+
+      if (!product)
+        throw new BadRequestException(`Product ${itemDto.productId} not found`);
       if (product.quantity < itemDto.quantity) {
-        throw new BadRequestException(`Product ${product.title} is out of stock`);
+        throw new BadRequestException(
+          `Product ${product.title} is out of stock`,
+        );
       }
 
       product.quantity -= itemDto.quantity;
@@ -35,12 +41,16 @@ export class PlaceOrderService {
       orderItems.push({
         product: product,
         quantity: itemDto.quantity,
-        price: product.currentPrice
+        price: product.currentPrice,
       });
     }
 
-    const vatAmount = subtotal * 0.10;
-    const shippingFee = ShippingCalculator.calculate(totalWeight, dto.city, subtotal);
+    const vatAmount = subtotal * 0.1;
+    const shippingFee = ShippingCalculator.calculate(
+      totalWeight,
+      dto.city,
+      subtotal,
+    );
     const totalAmount = subtotal + vatAmount + shippingFee;
 
     const order = this.orderRepo.create({
@@ -54,7 +64,7 @@ export class PlaceOrderService {
       shippingFee,
       totalAmount,
       status: OrderStatus.CREATED,
-      items: orderItems
+      items: orderItems,
     });
 
     return this.orderRepo.save(order);
@@ -65,15 +75,21 @@ export class PlaceOrderService {
     let totalWeight = 0;
 
     for (const itemDto of dto.items) {
-      const product = await this.productRepo.findOne({ where: { id: itemDto.productId } });
+      const product = await this.productRepo.findOne({
+        where: { id: itemDto.productId },
+      });
       if (product) {
         subtotal += Number(product.currentPrice) * itemDto.quantity;
         totalWeight += Number(product.weight) * itemDto.quantity;
       }
     }
 
-    const shippingFee = ShippingCalculator.calculate(totalWeight, dto.city, subtotal);
-    const vatAmount = subtotal * 0.10;
+    const shippingFee = ShippingCalculator.calculate(
+      totalWeight,
+      dto.city,
+      subtotal,
+    );
+    const vatAmount = subtotal * 0.1;
     const totalAmount = subtotal + vatAmount + shippingFee;
 
     return {
@@ -81,7 +97,7 @@ export class PlaceOrderService {
       vatAmount,
       shippingFee,
       totalAmount,
-      currency: 'VND'
+      currency: 'VND',
     };
   }
 }
