@@ -23,3 +23,18 @@ import { RolesGuard } from 'src/guards/role.guard';
   exports: [TypeOrmModule],
 })
 export class ProductsModule { }
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Common coupling
+* - With which class: `Product` entity, `JwtAuthGuard`, `RolesGuard`
+* - Reason: The module wires product-related providers, registers guards and imports TypeORM feature entities; it coordinates multiple components.
+*
+* 2. COHESION:
+* - Level: Procedural cohesion
+* - Between components: imports, controllers, providers
+* - Reason: The module groups product functionality and related infrastructure (auth guards), serving composition responsibilities.
+* ---------------------------------------------------------
+*/

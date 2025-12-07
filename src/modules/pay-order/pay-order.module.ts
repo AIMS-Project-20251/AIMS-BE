@@ -24,3 +24,18 @@ import { MailSenderService } from '../mail-sender/mail-sender.service';
   ],
 })
 export class PayOrderModule {}
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Common coupling
+* - With which class: `Payment` entity, `PlaceOrderModule`, `MailSenderModule`, strategy providers
+* - Reason: Module composes payment-related services and strategies and imports dependencies needed for persistence and mail sending.
+*
+* 2. COHESION:
+* - Level: Procedural cohesion
+* - Between components: imports, controllers, providers
+* - Reason: The module groups payment orchestration pieces and registers providers for DI; its purpose is composition.
+* ---------------------------------------------------------
+*/

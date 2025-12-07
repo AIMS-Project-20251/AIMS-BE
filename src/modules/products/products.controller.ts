@@ -49,3 +49,18 @@ export class ProductsController {
     return this.productsService.remove(+id);
   }
 }
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `ProductsService`, DTO classes
+* - Reason: Controller maps HTTP requests to service calls and depends on DTOs and service API signatures.
+*
+* 2. COHESION:
+* - Level: Functional cohesion
+* - Between components: CRUD endpoint methods (`create`, `findAll`, `findOne`, `update`, `remove`)
+* - Reason: Each method handles an HTTP endpoint and delegates to the service; responsibilities are tightly focused on request handling.
+* ---------------------------------------------------------
+*/

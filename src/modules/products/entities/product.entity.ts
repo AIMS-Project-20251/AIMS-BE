@@ -48,3 +48,18 @@ export class Product {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: repositories, `CartItem`, `OrderItem`
+* - Reason: Entity is a data contract used across services and relations (cart/order items); it couples via data shapes and DB mappings.
+*
+* 2. COHESION:
+* - Level: Communicational cohesion
+* - Between components: all product properties (title, price, quantity, type, attributes)
+* - Reason: Fields capture the complete state of a product; the class is a cohesive data model.
+* ---------------------------------------------------------
+*/

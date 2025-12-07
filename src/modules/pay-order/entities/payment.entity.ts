@@ -26,3 +26,18 @@ export class Payment {
   @CreateDateColumn()
   createdAt: Date;
 }
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `Order` entity, repositories
+* - Reason: Entity represents payment records tied to orders and is persisted; other services reference it.
+*
+* 2. COHESION:
+* - Level: Communicational cohesion
+* - Between components: `method`, `transactionId`, `amount`, `status`, `order`
+* - Reason: Fields together describe a payment record; the class is a cohesive data model for payments.
+* ---------------------------------------------------------
+*/

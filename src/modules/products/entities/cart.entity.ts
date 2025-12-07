@@ -18,3 +18,18 @@ export class Cart {
   @CreateDateColumn()
   createdAt: Date;
 }
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `CartItem`
+* - Reason: `Cart` aggregates `CartItem` instances and is persisted; it depends on the item structure for totals.
+*
+* 2. COHESION:
+* - Level: Communicational cohesion
+* - Between components: `subtotal`, `totalAmount`, `items`
+* - Reason: Properties together describe cart state and are used jointly when processing cart operations.
+* ---------------------------------------------------------
+*/

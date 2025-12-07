@@ -44,3 +44,18 @@ export class CreateProductDto {
   @IsObject()
   attributes?: Record<string, any>;
 }
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `Product` entity, controller/service that consume it
+* - Reason: DTO defines the shape of data exchanged between client and server and maps closely to the product entity.
+*
+* 2. COHESION:
+* - Level: Functional cohesion
+* - Between components: all DTO properties (title, category, prices, etc.)
+* - Reason: All fields together represent the input needed to create a product; the DTO is focused on that single purpose.
+* ---------------------------------------------------------
+*/

@@ -22,3 +22,18 @@ export class JwtAuthGuard implements CanActivate {
     }
   }
 }
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `JwtService`, Http request objects
+* - Reason: The guard depends on data provided by incoming requests (authorization header) and delegates token verification to `JwtService`. It uses the token payload to populate `request.user` but does not tightly depend on internal implementation of other modules.
+*
+* 2. COHESION:
+* - Level: Functional cohesion
+* - Between components: `canActivate` method
+* - Reason: The class has a single well-defined responsibility: authenticate requests by verifying JWT. All methods and properties contribute directly to that purpose.
+* ---------------------------------------------------------
+*/

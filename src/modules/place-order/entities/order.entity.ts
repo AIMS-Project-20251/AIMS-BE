@@ -54,3 +54,18 @@ export class Order {
   @CreateDateColumn()
   createdAt: Date;
 }
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `OrderItem`, `Payment` (and repositories that persist them)
+* - Reason: Entity defines relations to `OrderItem` and `Payment` and is persisted by TypeORM; it is shaped to match database schema and used across services.
+*
+* 2. COHESION:
+* - Level: Communicational cohesion
+* - Between components: entity properties (customerName, items, payments, amounts, status)
+* - Reason: All fields represent the state of an order and are used together when processing or querying orders; the class is a cohesive data structure.
+* ---------------------------------------------------------
+*/

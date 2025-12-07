@@ -48,3 +48,18 @@ export class PayOrderController {
 
   
 }
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data coupling
+* - With which class: `PayOrderService`, DTOs `PaymentRequestDto`, `ConfirmVietqrDto`
+* - Reason: Controller maps HTTP requests to service methods and depends on DTO shapes.
+*
+* 2. COHESION:
+* - Level: Functional cohesion
+* - Between components: endpoint handlers for creating payments, confirm/cancel/refund
+* - Reason: Controller focuses on exposing payment-related endpoints and delegating to service logic.
+* ---------------------------------------------------------
+*/

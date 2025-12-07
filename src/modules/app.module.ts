@@ -25,3 +25,18 @@ import { MailSenderModule } from './mail-sender/mail-sender.module';
   providers: [],
 })
 export class AppModule {}
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Common coupling / Data coupling
+* - With which class: `TypeOrmModule`, feature modules like `ProductsModule`, `PlaceOrderModule`, etc.
+* - Reason: `AppModule` aggregates and wires multiple modules together and shares configuration objects (common imports). It couples to many modules via imports but does not depend on their internal implementations.
+*
+* 2. COHESION:
+* - Level: Procedural cohesion
+* - Between components: module metadata (`imports`, `controllers`, `providers`)
+* - Reason: `AppModule` is responsible for application composition and configuration; its parts work together to initialize the application container rather than implement business logic.
+* ---------------------------------------------------------
+*/

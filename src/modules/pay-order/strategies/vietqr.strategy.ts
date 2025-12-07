@@ -68,3 +68,18 @@ export class VietqrStrategy implements PaymentStrategy {
     }
   }
 }
+
+/*
+* MODULE DESIGN EVALUATION
+* ---------------------------------------------------------
+* 1. COUPLING:
+* - Level: Data/Common coupling
+* - With which class: `Payment` entity, external VietQR API
+* - Reason: The strategy calls an external API and persists `Payment` records; it depends on environment configuration and repository.
+*
+* 2. COHESION:
+* - Level: Functional cohesion
+* - Between components: constructor injection, `createPaymentRequest`
+* - Reason: The class focuses exclusively on preparing and creating VietQR payment requests and persisting the associated `Payment` entity.
+* ---------------------------------------------------------
+*/

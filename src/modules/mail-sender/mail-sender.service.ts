@@ -48,3 +48,18 @@ export class MailSenderService {
         return { message: `Email sent to ${order.id}` }
     }
 }
+
+    /*
+    * MODULE DESIGN EVALUATION
+    * ---------------------------------------------------------
+    * 1. COUPLING:
+    * - Level: Common coupling
+    * - With which class: `Order` entity, `MailerService` (external library), repositories
+    * - Reason: Service reads order data and uses an external mailer to send templated emails; it depends on mailer library contracts and order data shape.
+    *
+    * 2. COHESION:
+    * - Level: Functional cohesion
+    * - Between components: `sendOrderSuccessEmail` method
+    * - Reason: The class has a single responsibility: prepare and send order-related emails; all internals support that action.
+    * ---------------------------------------------------------
+    */
