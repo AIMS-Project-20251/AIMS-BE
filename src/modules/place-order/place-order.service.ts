@@ -51,6 +51,12 @@ export class PlaceOrderService {
           `Product ${product.title} is out of stock`,
         );
       }
+
+      if (product.isActive === false) {
+        throw new BadRequestException(
+          `Product ${product.title} is not available for sale`,
+        );
+      }
   
       product.quantity -= itemDto.quantity;
       await repo.save(product);
