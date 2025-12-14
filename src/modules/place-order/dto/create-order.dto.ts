@@ -1,11 +1,16 @@
-import { IsString, IsEmail, IsNotEmpty, IsArray, ValidateNested, IsNumber, Min } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, IsArray, ValidateNested, IsNumber, Min, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { ProductType } from 'src/modules/products/entities/base-product.entity';
 
 class OrderItemDto {
   @ApiProperty()
   @IsNumber()
   productId: number;
+
+  @ApiProperty({ enum: ProductType })
+  @IsEnum(ProductType)
+  type: ProductType;
 
   @ApiProperty()
   @IsNumber()

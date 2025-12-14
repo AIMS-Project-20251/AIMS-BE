@@ -14,38 +14,26 @@ import { BaseProduct, ProductType } from '../products/entities/base-product.enti
 export class PlaceOrderService {
   constructor(
     @InjectRepository(Order) private orderRepo: Repository<Order>,
-
     @InjectRepository(Book) private bookRepo: Repository<Book>,
     @InjectRepository(CD) private cdRepo: Repository<CD>,
     @InjectRepository(DVD) private dvdRepo: Repository<DVD>,
     @InjectRepository(Newspaper) private newspaperRepo: Repository<Newspaper>,
-  ) {}
-
-  private getRepo(type: ProductType): Repository<any> {
-    switch (type) {
-      case ProductType.BOOK: return this.bookRepo;
-      case ProductType.CD: return this.cdRepo;
-      case ProductType.DVD: return this.dvdRepo;
-      case ProductType.NEWSPAPER: return this.newspaperRepo;
-      default:
-        throw new BadRequestException('Invalid product type');
-    }
-  }
+  ) { }
 
   async placeOrder(dto: CreateOrderDto) {
     let subtotal = 0;
     let totalWeight = 0;
     const orderItems: { product: any; quantity: number; price: number }[] = [];
-  
+
     for (const itemDto of dto.items) {
-      const found = await this.findProductEverywhere(itemDto.productId);
-  
+      const found = await this.findProductEverywhere(itemDto.productId, itemDto.type);
+
       if (!found) {
         throw new BadRequestException(`Product ${itemDto.productId} not found`);
       }
-  
+
       const { product, repo } = found;
-  
+
       if (product.quantity < itemDto.quantity) {
         throw new BadRequestException(
           `Product ${product.title} is out of stock`,
@@ -57,24 +45,24 @@ export class PlaceOrderService {
           `Product ${product.title} is not available for sale`,
         );
       }
-  
+
       product.quantity -= itemDto.quantity;
       await repo.save(product);
-  
+
       subtotal += Number(product.currentPrice) * itemDto.quantity;
       totalWeight += Number(product.weight) * itemDto.quantity;
-  
+
       orderItems.push({
         product,
         quantity: itemDto.quantity,
         price: product.currentPrice,
       });
     }
-  
+
     const vatAmount = subtotal * 0.10;
     const shippingFee = ShippingCalculator.calculate(totalWeight, dto.city, subtotal);
     const totalAmount = subtotal + vatAmount + shippingFee;
-  
+
     const order = this.orderRepo.create({
       customerName: dto.customerName,
       email: dto.email,
@@ -88,28 +76,28 @@ export class PlaceOrderService {
       status: OrderStatus.CREATED,
       items: orderItems,
     });
-  
+
     return this.orderRepo.save(order);
-  } 
+  }
 
   async calculateFeesOnly(dto: CreateOrderDto) {
     let subtotal = 0;
     let totalWeight = 0;
-  
+
     for (const itemDto of dto.items) {
-      const found = await this.findProductEverywhere(itemDto.productId);
+      const found = await this.findProductEverywhere(itemDto.productId, itemDto.type);
       if (!found) continue;
-  
+
       const { product } = found;
-  
+
       subtotal += Number(product.currentPrice) * itemDto.quantity;
       totalWeight += Number(product.weight) * itemDto.quantity;
     }
-  
+
     const shippingFee = ShippingCalculator.calculate(totalWeight, dto.city, subtotal);
     const vatAmount = subtotal * 0.10;
     const totalAmount = subtotal + vatAmount + shippingFee;
-  
+
     return {
       subtotal,
       vatAmount,
@@ -121,31 +109,27 @@ export class PlaceOrderService {
 
   async checkStatus(orderId: number) {
     const order = await this.orderRepo.findOne({ where: { id: orderId } });
-  
+
     if (!order) {
       throw new BadRequestException(`Order ${orderId} not found`);
     }
-  
+
     return { status: order.status };
   }
-  
 
-  private async findProductEverywhere(id: number): 
-  Promise<{ product: BaseProduct; repo: Repository<BaseProduct> } | null> 
-{
-  const repos: Repository<BaseProduct>[] = [
-    this.bookRepo as Repository<BaseProduct>,
-    this.cdRepo as Repository<BaseProduct>,
-    this.dvdRepo as Repository<BaseProduct>,
-    this.newspaperRepo as Repository<BaseProduct>,
-  ];
+  private async findProductEverywhere(id: number, type: ProductType): Promise<{ product: BaseProduct; repo: Repository<BaseProduct> } | null> {
+    const repos: Repository<BaseProduct>[] = [
+      this.bookRepo as Repository<BaseProduct>,
+      this.cdRepo as Repository<BaseProduct>, 
+      this.dvdRepo as Repository<BaseProduct>,
+      this.newspaperRepo as Repository<BaseProduct>,
+    ];
 
-  for (const repo of repos) {
-    const product = await repo.findOne({ where: { id } });
-    if (product) return { product, repo };
+    for (const repo of repos) {
+      const product = await repo.findOne({ where: { id, type } });
+      if (product) return { product, repo };
+    }
+
+    return null;
   }
-
-  return null;
-}
-
 }
