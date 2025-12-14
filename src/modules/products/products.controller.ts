@@ -48,11 +48,14 @@ export class ProductsController {
     return this.productsService.findAll(search, category);
   }
 
-  @Get(':id')
+  @Get(':id/:type')
   @ApiResponse({ status: 200, description: 'Get succesful!' })
   @ApiResponse({ status: 400, description: 'Get failed!' })
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id);
+  findOne(
+    @Param('id') id: string, 
+    @Param('type') type: ProductType
+  ) {
+    return this.productsService.findOne(+id, type);
   }
 
   @Patch(':id')
@@ -77,10 +80,13 @@ export class ProductsController {
     }
   }
   
-  @Delete(':id')
+  @Delete(':id/:type')
   @ApiResponse({ status: 200, description: 'Delete succesful!' })
   @ApiResponse({ status: 400, description: 'Delete failed!' })
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(+id);
+  remove(
+    @Param('id') id: string,
+    @Param('type') type: ProductType
+  ) {
+    return this.productsService.remove(+id, type);
   }
 }

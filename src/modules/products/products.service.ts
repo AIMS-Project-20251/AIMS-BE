@@ -57,18 +57,10 @@ export class ProductsService {
     return results.flat();
   }
 
-  async findOne(id: number) {
-    const repos = [
-      this.bookRepo,
-      this.cdRepo,
-      this.dvdRepo,
-      this.newspaperRepo,
-    ];
-
-    for (const repo of repos) {
-      const product = await repo.findOne({ where: { id } });
-      if (product) return product;
-    }
+  async findOne(id: number, type: ProductType) {
+    const repo = this.getRepo(type);
+    const product = await repo.findOne({ where: { id } });
+    if (product) return product;
 
     throw new NotFoundException('Product not found');
   }
@@ -265,8 +257,8 @@ export class ProductsService {
     return this.newspaperRepo.save(product);
   }
   
-  async remove(id: number) {
-    const product = await this.findOne(id);
+  async remove(id: number, type: ProductType) {
+    const product = await this.findOne(id, type);
     const repo = this.getRepoByType(product.type);
 
     if (product.quantity > 0) {
