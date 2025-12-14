@@ -23,7 +23,7 @@ export class PlaceOrderService {
   async placeOrder(dto: CreateOrderDto) {
     let subtotal = 0;
     let totalWeight = 0;
-    const orderItems: { product: any; quantity: number; price: number }[] = [];
+    const orderItems: { productId: number, productType: ProductType; quantity: number; price: number }[] = [];
 
     for (const itemDto of dto.items) {
       const found = await this.findProductEverywhere(itemDto.productId, itemDto.type);
@@ -53,7 +53,8 @@ export class PlaceOrderService {
       totalWeight += Number(product.weight) * itemDto.quantity;
 
       orderItems.push({
-        product,
+        productId: product.id,
+        productType: itemDto.type,
         quantity: itemDto.quantity,
         price: product.currentPrice,
       });
@@ -120,7 +121,7 @@ export class PlaceOrderService {
   private async findProductEverywhere(id: number, type: ProductType): Promise<{ product: BaseProduct; repo: Repository<BaseProduct> } | null> {
     const repos: Repository<BaseProduct>[] = [
       this.bookRepo as Repository<BaseProduct>,
-      this.cdRepo as Repository<BaseProduct>, 
+      this.cdRepo as Repository<BaseProduct>,
       this.dvdRepo as Repository<BaseProduct>,
       this.newspaperRepo as Repository<BaseProduct>,
     ];
