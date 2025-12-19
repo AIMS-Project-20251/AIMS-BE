@@ -1,10 +1,6 @@
 import { IsString, IsEmail, IsNotEmpty, IsArray, ValidateNested, IsNumber, Min, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
-<<<<<<< Updated upstream
-import { ApiProperty } from '@nestjs/swagger';
-=======
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
->>>>>>> Stashed changes
 import { ProductType } from 'src/modules/products/entities/base-product.entity';
 
 class OrderItemDto {
@@ -14,9 +10,6 @@ class OrderItemDto {
 
   @ApiProperty({ enum: ProductType })
   @IsEnum(ProductType)
-  type: ProductType;
-
-  @ApiProperty()
   type: ProductType;
 
   @ApiProperty()
