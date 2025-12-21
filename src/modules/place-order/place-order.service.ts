@@ -8,7 +8,10 @@ import { Book } from '../products/entities/book.entity';
 import { CD } from '../products/entities/cd.entity';
 import { DVD } from '../products/entities/dvd.entity';
 import { Newspaper } from '../products/entities/newspaper.entity';
-import { BaseProduct, ProductType } from '../products/entities/base-product.entity';
+import {
+  BaseProduct,
+  ProductType,
+} from '../products/entities/base-product.entity';
 import { ProductsStrategy } from '../products/strategies/products.strategy.interface';
 import { PRODUCT_STRATEGIES } from '../products/constants/product-strategies.token';
 
@@ -18,17 +21,24 @@ export class PlaceOrderService {
     @Inject(PRODUCT_STRATEGIES)
     private readonly productsStrategies: Record<ProductType, ProductsStrategy>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
-  ) { }
+  ) {}
 
   async placeOrder(dto: CreateOrderDto) {
     let subtotal = 0;
     let totalWeight = 0;
-    const orderItems: { productId: number, productType: ProductType; quantity: number; price: number }[] = [];
+    const orderItems: {
+      productId: number;
+      productType: ProductType;
+      quantity: number;
+      price: number;
+    }[] = [];
 
     for (const itemDto of dto.items) {
       const strategy = this.productsStrategies[itemDto.type];
       if (!strategy) {
-        throw new BadRequestException(`Product type ${itemDto.type} does not exist`);
+        throw new BadRequestException(
+          `Product type ${itemDto.type} does not exist`,
+        );
       }
       const product = await strategy.findOne(itemDto.productId);
       if (!product) {
@@ -63,8 +73,12 @@ export class PlaceOrderService {
       });
     }
 
-    const vatAmount = subtotal * 0.10;
-    const shippingFee = ShippingCalculator.calculate(totalWeight, dto.city, subtotal);
+    const vatAmount = subtotal * 0.1;
+    const shippingFee = ShippingCalculator.calculate(
+      totalWeight,
+      dto.city,
+      subtotal,
+    );
     const totalAmount = subtotal + vatAmount + shippingFee;
 
     const order = this.orderRepo.create({
@@ -91,19 +105,23 @@ export class PlaceOrderService {
     for (const itemDto of dto.items) {
       const strategy = this.productsStrategies[itemDto.type];
       if (!strategy) {
-        throw new BadRequestException(`Product type ${itemDto.type} does not exist`);
+        throw new BadRequestException(
+          `Product type ${itemDto.type} does not exist`,
+        );
       }
-      const found = await strategy.findOne(itemDto.productId);
-      if (!found) continue;
-
-      const { product } = found;
+      const product = await strategy.findOne(itemDto.productId);
+      if (!product) continue;
 
       subtotal += Number(product.currentPrice) * itemDto.quantity;
       totalWeight += Number(product.weight) * itemDto.quantity;
     }
 
-    const shippingFee = ShippingCalculator.calculate(totalWeight, dto.city, subtotal);
-    const vatAmount = subtotal * 0.10;
+    const shippingFee = ShippingCalculator.calculate(
+      totalWeight,
+      dto.city,
+      subtotal,
+    );
+    const vatAmount = subtotal * 0.1;
     const totalAmount = subtotal + vatAmount + shippingFee;
 
     return {
