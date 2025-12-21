@@ -7,12 +7,8 @@ import {
   Param,
   Delete,
   Query,
-  UseGuards,
-  BadRequestException,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
 import { ProductType } from './entities/base-product.entity';
 
@@ -23,20 +19,9 @@ export class ProductsController {
   @Post()
   @ApiResponse({ status: 200, description: 'Create succesful!' })
   @ApiResponse({ status: 400, description: 'Create failed!' })
-  create(@Body() createProductDto: CreateProductDto) {
-    switch (createProductDto.type) {
-      case ProductType.BOOK:
-        return this.productsService.createBook(createProductDto);
-      case ProductType.CD:
-        return this.productsService.createCD(createProductDto);
-      case ProductType.DVD:
-        return this.productsService.createDVD(createProductDto);
-      case ProductType.NEWSPAPER:
-        return this.productsService.createNewspaper(createProductDto);
-      default:
-        throw new BadRequestException(`Unknown product type: ${createProductDto['type']}`);
+  create(@Body() dto: any) {
+      return this.productsService.create(dto);
     }
-  }
 
   @Get()
   @ApiResponse({ status: 200, description: 'Get succesful!' })
@@ -59,25 +44,14 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  @ApiBody({ type: UpdateProductDto })
+  @ApiBody({ })
   @ApiResponse({ status: 200, description: 'Update successful!' })
   @ApiResponse({ status: 400, description: 'Update failed!' })
   update(
     @Param('id') id: string,
-    @Body() updateProductDto: UpdateProductDto,
+    @Body() dto: any,
   ) {
-    switch (updateProductDto.type) {
-      case ProductType.BOOK:
-        return this.productsService.updateBook(+id, updateProductDto);
-      case ProductType.CD:
-        return this.productsService.updateCD(+id, updateProductDto);
-      case ProductType.DVD:
-        return this.productsService.updateDVD(+id, updateProductDto);
-      case ProductType.NEWSPAPER:
-        return this.productsService.updateNewspaper(+id, updateProductDto);
-      default:
-        throw new BadRequestException(`Unknown product type: ${updateProductDto['type']}`);
-    }
+    return this.productsService.update(+id, dto);
   }
   
   @Delete(':id/:type')

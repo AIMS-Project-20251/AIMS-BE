@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
@@ -9,15 +9,15 @@ import { CD } from '../products/entities/cd.entity';
 import { DVD } from '../products/entities/dvd.entity';
 import { Newspaper } from '../products/entities/newspaper.entity';
 import { BaseProduct, ProductType } from '../products/entities/base-product.entity';
+import { ProductsStrategy } from '../products/strategies/products.strategy.interface';
+import { PRODUCT_STRATEGIES } from '../products/constants/product-strategies.token';
 
 @Injectable()
 export class PlaceOrderService {
   constructor(
+    @Inject(PRODUCT_STRATEGIES)
+    private readonly productsStrategies: Record<ProductType, ProductsStrategy>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
-    @InjectRepository(Book) private bookRepo: Repository<Book>,
-    @InjectRepository(CD) private cdRepo: Repository<CD>,
-    @InjectRepository(DVD) private dvdRepo: Repository<DVD>,
-    @InjectRepository(Newspaper) private newspaperRepo: Repository<Newspaper>,
   ) { }
 
   async placeOrder(dto: CreateOrderDto) {
@@ -26,13 +26,16 @@ export class PlaceOrderService {
     const orderItems: { productId: number, productType: ProductType; quantity: number; price: number }[] = [];
 
     for (const itemDto of dto.items) {
-      const found = await this.findProductEverywhere(itemDto.productId, itemDto.type);
-
-      if (!found) {
-        throw new BadRequestException(`Product ${itemDto.productId} not found`);
+      const strategy = this.productsStrategies[itemDto.type];
+      if (!strategy) {
+        throw new BadRequestException(`Product type ${itemDto.type} does not exist`);
       }
-
-      const { product, repo } = found;
+      const product = await strategy.findOne(itemDto.productId);
+      if (!product) {
+        throw new BadRequestException(
+          `Product ID ${itemDto.productId} of type ${itemDto.type} not found`,
+        );
+      }
 
       if (product.quantity < itemDto.quantity) {
         throw new BadRequestException(
@@ -47,7 +50,7 @@ export class PlaceOrderService {
       }
 
       product.quantity -= itemDto.quantity;
-      await repo.save(product);
+      await strategy.update(product.id, product);
 
       subtotal += Number(product.currentPrice) * itemDto.quantity;
       totalWeight += Number(product.weight) * itemDto.quantity;
@@ -86,7 +89,11 @@ export class PlaceOrderService {
     let totalWeight = 0;
 
     for (const itemDto of dto.items) {
-      const found = await this.findProductEverywhere(itemDto.productId, itemDto.type);
+      const strategy = this.productsStrategies[itemDto.type];
+      if (!strategy) {
+        throw new BadRequestException(`Product type ${itemDto.type} does not exist`);
+      }
+      const found = await strategy.findOne(itemDto.productId);
       if (!found) continue;
 
       const { product } = found;
@@ -116,21 +123,5 @@ export class PlaceOrderService {
     }
 
     return { status: order.status };
-  }
-
-  private async findProductEverywhere(id: number, type: ProductType): Promise<{ product: BaseProduct; repo: Repository<BaseProduct> } | null> {
-    const repos: Repository<BaseProduct>[] = [
-      this.bookRepo as Repository<BaseProduct>,
-      this.cdRepo as Repository<BaseProduct>,
-      this.dvdRepo as Repository<BaseProduct>,
-      this.newspaperRepo as Repository<BaseProduct>,
-    ];
-
-    for (const repo of repos) {
-      const product = await repo.findOne({ where: { id, type } });
-      if (product) return { product, repo };
-    }
-
-    return null;
   }
 }

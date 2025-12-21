@@ -12,10 +12,12 @@ import { Book } from '../products/entities/book.entity';
 import { CD } from '../products/entities/cd.entity';
 import { DVD } from '../products/entities/dvd.entity';
 import { Newspaper } from '../products/entities/newspaper.entity';
+import { ProductsModule } from '../products/products.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Payment, Book, CD, DVD, Newspaper]),
+    TypeOrmModule.forFeature([Payment]),
+    ProductsModule,
     PlaceOrderModule,
     MailSenderModule
   ],

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,29 +13,30 @@ import {
   PaymentStrategy,
   PaymentResponse,
 } from './strategies/payment.strategy.interface';
-import { Payment } from './entities/payment.entity';
 import { MailSenderService } from '../mail-sender/mail-sender.service';
-import { Book } from '../products/entities/book.entity';
-import { CD } from '../products/entities/cd.entity';
-import { DVD } from '../products/entities/dvd.entity';
-import { Newspaper } from '../products/entities/newspaper.entity';
+import { ProductsStrategy } from '../products/strategies/products.strategy.interface';
+import { BooksStrategy } from '../products/strategies/books.strategy';
+import { CdsStrategy } from '../products/strategies/cds.strategy';
+import { DvdsStrategy } from '../products/strategies/dvds.strategy';
+import { NewspapersStrategy } from '../products/strategies/newspapers.strategy';
+import { Payment } from './entities/payment.entity';
+import { PRODUCT_STRATEGIES } from '../products/constants/product-strategies.token';
+import { ProductType } from '../products/entities/base-product.entity';
 
 @Injectable()
 export class PayOrderService {
-  private readonly strategies: Record<string, PaymentStrategy>;
+  private readonly paymentStrategies: Record<string, PaymentStrategy>;
 
   constructor(
     @InjectRepository(Order) private orderRepo: Repository<Order>,
-    @InjectRepository(Payment) private paymnetRepo: Repository<Payment>,
-    @InjectRepository(Book) private bookRepo: Repository<Book>,
-    @InjectRepository(CD) private cdRepo: Repository<CD>,
-    @InjectRepository(DVD) private dvdRepo: Repository<DVD>,
-    @InjectRepository(Newspaper) private newspaperRepo: Repository<Newspaper>,
+    @InjectRepository(Payment) private paymentRepo: Repository<Payment>,
+    @Inject(PRODUCT_STRATEGIES)
+    private readonly productsStrategies: Record<ProductType, ProductsStrategy>,
     private readonly paypalStrategy: PaypalStrategy,
     private readonly vietqrStrategy: VietqrStrategy,
     private readonly mailSenderService: MailSenderService,
   ) {
-    this.strategies = {
+    this.paymentStrategies = {
       PAYPAL: this.paypalStrategy,
       VIETQR: this.vietqrStrategy,
     };
@@ -51,24 +53,17 @@ export class PayOrderService {
   
     for (const item of order.items) {
       let product;
-      switch (item.productType) {
-        case 'BOOK':
-          product = await this.bookRepo.findOne({ where: { id: item.productId } });
-          break;
-        case 'CD':
-          product = await this.cdRepo.findOne({ where: { id: item.productId } });
-          break;
-        case 'DVD':
-          product = await this.dvdRepo.findOne({ where: { id: item.productId } });
-          break;
-        case 'NEWSPAPER':
-          product = await this.newspaperRepo.findOne({ where: { id: item.productId } });
-          break;
+      const strategy = this.productsStrategies[item.productType];
+      if (!strategy) {
+        throw new BadRequestException(
+          `Product type ${item.productType} is not supported`,
+        );
       }
+      product = await strategy.findOne(item.productId);
       item['product'] = product;
     }
   
-    const strategy = this.strategies[method];
+    const strategy = this.paymentStrategies[method];
     if (!strategy) {
       throw new BadRequestException(
         `Payment method ${method} is not supported`,
@@ -101,7 +96,7 @@ export class PayOrderService {
   // }
 
   async confirmPaypalTransaction(paypalOrderId: string) {
-    const payment = await this.paymnetRepo.findOne({
+    const payment = await this.paymentRepo.findOne({
       where: { transactionId: paypalOrderId, method: 'PAYPAL' },
       relations: ['order'],
     });
@@ -110,7 +105,7 @@ export class PayOrderService {
     }
 
     payment.status = 'COMPLETED';
-    await this.paymnetRepo.save(payment);
+    await this.paymentRepo.save(payment);
 
     const order = payment.order;
     order.status = OrderStatus.PAID;
@@ -121,7 +116,7 @@ export class PayOrderService {
   }
 
   async cancelPaypalTransaction(paypalOrderId: string) {
-    const payment = await this.paymnetRepo.findOne({
+    const payment = await this.paymentRepo.findOne({
       where: { transactionId: paypalOrderId, method: 'PAYPAL' },
       relations: ['order'],
     });
@@ -130,7 +125,7 @@ export class PayOrderService {
     }
 
     payment.status = 'CANCELLED';
-    await this.paymnetRepo.save(payment);
+    await this.paymentRepo.save(payment);
   }
 
   // async comfirmVietqrTransaction(vietQROrderId: string) {
@@ -154,7 +149,7 @@ export class PayOrderService {
   // }
 
   async comfirmVietqrTransaction(vietQROrderId: string) {
-    const payment = await this.paymnetRepo.findOne({
+    const payment = await this.paymentRepo.findOne({
       where: { transactionId: vietQROrderId, method: 'VIETQR' },
       relations: ['order'],
     });
@@ -163,7 +158,7 @@ export class PayOrderService {
     }
 
     payment.status = 'COMPLETED';
-    await this.paymnetRepo.save(payment);
+    await this.paymentRepo.save(payment);
 
     const order = payment.order;
     order.status = OrderStatus.PAID;
