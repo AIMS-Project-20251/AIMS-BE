@@ -110,7 +110,11 @@ export class PlaceOrderService {
         );
       }
       const product = await strategy.findOne(itemDto.productId);
-      if (!product) continue;
+      if (!product) {
+        throw new BadRequestException(
+          `Product ID ${itemDto.productId} of type ${itemDto.type} not found`,
+        );
+      }
 
       subtotal += Number(product.currentPrice) * itemDto.quantity;
       totalWeight += Number(product.weight) * itemDto.quantity;
