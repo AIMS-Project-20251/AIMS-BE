@@ -18,7 +18,7 @@ export class CD {
   recordLabel: string;
 
   // SQL script specified JSONB for cds
-  @Column({ type: 'jsonb' }) 
+  @Column({ type: 'json' }) 
   tracks: Track[];
 
   @Column()

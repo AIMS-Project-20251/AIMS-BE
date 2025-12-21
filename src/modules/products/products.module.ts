@@ -14,12 +14,12 @@ import { CdsStrategy } from './strategies/cds.strategy';
 import { DvdsStrategy } from './strategies/dvds.strategy';
 import { NewspapersStrategy } from './strategies/newspapers.strategy';
 import { PRODUCT_STRATEGIES } from './constants/product-strategies.token';
-import { ProductType } from './entities/base-product.entity';
+import { BaseProduct, ProductType } from './entities/base-product.entity';
 import { ProductsStrategy } from './strategies/products.strategy.interface';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Book, CD, DVD, Newspaper]),
+    TypeOrmModule.forFeature([Book, CD, DVD, Newspaper, BaseProduct]),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '7d' },
