@@ -1,5 +1,5 @@
-import { Entity, Column } from 'typeorm';
-import { BaseProduct, ProductType } from './base-product.entity';
+import { Entity, Column, OneToOne, JoinColumn, PrimaryColumn } from 'typeorm';
+import { BaseProduct } from './base-product.entity';
 
 export enum CoverType {
   PAPERBACK = 'PAPERBACK',
@@ -7,7 +7,10 @@ export enum CoverType {
 }
 
 @Entity('books')
-export class Book extends BaseProduct {
+export class Book {
+  @PrimaryColumn()
+  id: number; // id from BaseProduct
+
   @Column()
   authors: string;
 
@@ -29,8 +32,8 @@ export class Book extends BaseProduct {
   @Column({ nullable: true })
   genre?: string;
 
-  constructor() {
-    super();
-    this.type = ProductType.BOOK;
-  }
+  // Link to the parent table
+  @OneToOne(() => BaseProduct, { cascade: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'id' })
+  baseProduct: BaseProduct;
 }

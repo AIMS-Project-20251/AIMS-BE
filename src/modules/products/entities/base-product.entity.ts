@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Entity,
 } from 'typeorm';
 
 export enum ProductType {
@@ -12,7 +13,8 @@ export enum ProductType {
   NEWSPAPER = 'NEWSPAPER',
 }
 
-export abstract class BaseProduct {
+@Entity('base_product')
+export class BaseProduct {
   @PrimaryGeneratedColumn()
   id: number;
 

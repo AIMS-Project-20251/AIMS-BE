@@ -1,8 +1,11 @@
-import { Entity, Column } from 'typeorm';
-import { BaseProduct, ProductType } from './base-product.entity';
+import { Entity, Column, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
+import { BaseProduct } from './base-product.entity';
 
 @Entity('newspapers')
-export class Newspaper extends BaseProduct {
+export class Newspaper {
+  @PrimaryColumn()
+  id: number; // id from BaseProduct
+
   @Column()
   editorInChief: string;
 
@@ -12,7 +15,6 @@ export class Newspaper extends BaseProduct {
   @Column({ type: 'date' })
   publicationDate: Date;
 
-  // Optional
   @Column({ nullable: true })
   issueNumber?: string;
 
@@ -25,11 +27,11 @@ export class Newspaper extends BaseProduct {
   @Column({ nullable: true })
   language?: string;
 
+  // SQL script specified TEXT for sections
   @Column('simple-array', { nullable: true })
   sections?: string[];
 
-  constructor() {
-    super();
-    this.type = ProductType.NEWSPAPER;
-  }
+  @OneToOne(() => BaseProduct, { cascade: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'id' })
+  baseProduct: BaseProduct;
 }

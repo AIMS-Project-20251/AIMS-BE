@@ -1,5 +1,5 @@
-import { Entity, Column } from 'typeorm';
-import { BaseProduct, ProductType } from './base-product.entity';
+import { Entity, Column, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
+import { BaseProduct } from './base-product.entity';
 
 export enum DiscType {
   BLURAY = 'BLURAY',
@@ -7,7 +7,10 @@ export enum DiscType {
 }
 
 @Entity('dvds')
-export class DVD extends BaseProduct {
+export class DVD {
+  @PrimaryColumn()
+  id: number; // id from BaseProduct
+
   @Column({ type: 'enum', enum: DiscType })
   discType: DiscType;
 
@@ -23,18 +26,17 @@ export class DVD extends BaseProduct {
   @Column()
   language: string;
 
-  @Column('simple-array')
+  // SQL script specified TEXT for subtitles
+  @Column('simple-array') 
   subtitles: string[];
 
-  // Optional
   @Column({ type: 'date', nullable: true })
   releaseDate?: Date;
 
   @Column({ nullable: true })
   genre?: string;
 
-  constructor() {
-    super();
-    this.type = ProductType.DVD;
-  }
+  @OneToOne(() => BaseProduct, { cascade: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'id' })
+  baseProduct: BaseProduct;
 }
