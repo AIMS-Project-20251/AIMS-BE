@@ -11,6 +11,14 @@ import {
 import { ProductsService } from './products.service';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
 import { ProductType } from './entities/base-product.entity';
+import { CreateBookDto } from './dto/create-book.dto';
+import { CreateCdDto } from './dto/create-cd.dto';
+import { CreateDvdDto } from './dto/create-dvd.dto';
+import { CreateNewspaperDto } from './dto/create-newspaper.dto';
+import { UpdateBookDto } from './dto/update-book.dto';
+import { UpdateCdDto } from './dto/update-cd.dto';
+import { UpdateDvdDto } from './dto/update-dvd.dto';
+import { UpdateNewspaperDto } from './dto/update-newspapers.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -19,7 +27,7 @@ export class ProductsController {
   @Post()
   @ApiResponse({ status: 200, description: 'Create succesful!' })
   @ApiResponse({ status: 400, description: 'Create failed!' })
-  create(@Body() dto: any) {
+  create(@Body() dto: CreateBookDto | CreateCdDto | CreateDvdDto | CreateNewspaperDto) {
       return this.productsService.create(dto);
     }
 
@@ -49,7 +57,7 @@ export class ProductsController {
   @ApiResponse({ status: 400, description: 'Update failed!' })
   update(
     @Param('id') id: string,
-    @Body() dto: any,
+    @Body() dto: UpdateBookDto | UpdateCdDto | UpdateDvdDto | UpdateNewspaperDto,
   ) {
     return this.productsService.update(+id, dto);
   }

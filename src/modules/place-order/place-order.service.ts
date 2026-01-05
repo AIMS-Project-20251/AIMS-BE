@@ -4,10 +4,6 @@ import { Repository } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { ShippingCalculator } from './shipping.calculator';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { Book } from '../products/entities/book.entity';
-import { CD } from '../products/entities/cd.entity';
-import { DVD } from '../products/entities/dvd.entity';
-import { Newspaper } from '../products/entities/newspaper.entity';
 import {
   BaseProduct,
   ProductType,

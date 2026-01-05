@@ -1,5 +1,6 @@
 import { IsString, IsNumber, Min, IsOptional, IsObject, IsEnum, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ProductType } from '../entities/base-product.entity';
 
 export enum DiscType {
     BLURAY = 'BLURAY',
@@ -34,9 +35,9 @@ export class UpdateDvdDto {
   @IsString()
   imageUrl: string;
 
-  @ApiProperty()
-  @IsString()
-  type: string = 'DVD';
+  @ApiProperty({ enum: ProductType })
+  @IsEnum(ProductType)
+  type: ProductType;
 
   @ApiProperty()
   @IsNumber()

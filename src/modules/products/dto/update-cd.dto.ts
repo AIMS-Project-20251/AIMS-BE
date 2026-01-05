@@ -1,5 +1,6 @@
-import { IsString, IsNumber, Min, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsNumber, Min, IsOptional, IsObject, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ProductType } from '../entities/base-product.entity';
 
 export class Track {
     title: string;
@@ -34,9 +35,9 @@ export class UpdateCdDto {
   @IsString()
   imageUrl: string;
 
-  @ApiProperty()
-  @IsString()
-  type: string = 'CD';
+  @ApiProperty({ enum: ProductType })
+  @IsEnum(ProductType)
+  type: ProductType;
 
   @ApiProperty()
   @IsNumber()

@@ -1,5 +1,6 @@
-import { IsString, IsNumber, Min, IsOptional, IsObject, IsDate, IsBoolean } from 'class-validator';
+import { IsString, IsNumber, Min, IsOptional, IsObject, IsDate, IsBoolean, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ProductType } from '../entities/base-product.entity';
 
 export class UpdateNewspaperDto {
   @ApiProperty()
@@ -29,9 +30,9 @@ export class UpdateNewspaperDto {
   @IsString()
   imageUrl: string;
 
-  @ApiProperty()
-  @IsString()
-  type: string = 'NEWSPAPER';
+  @ApiProperty({ enum: ProductType })
+  @IsEnum(ProductType)
+  type: ProductType;
 
   @ApiProperty()
   @IsNumber()
