@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotImplementedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PaymentStrategy, PaymentResponse } from './payment.strategy.interface';
 import { Order } from '../../place-order/entities/order.entity';
 import axios from 'axios';
@@ -15,7 +19,9 @@ export class VietqrStrategy implements PaymentStrategy {
   private bankName: string | undefined;
   private acqId: string | undefined;
 
-  constructor(@InjectRepository(Payment) private paymentRepo: Repository<Payment>) {
+  constructor(
+    @InjectRepository(Payment) private paymentRepo: Repository<Payment>,
+  ) {
     this.vietqrUrl = process.env.VIETQR_URL;
     this.clientId = process.env.VIETQR_CLIENT_ID;
     this.apiKey = process.env.VIETQR_API_KEY;
@@ -29,8 +35,8 @@ export class VietqrStrategy implements PaymentStrategy {
       const fakeBankTransId = `VQR-${Date.now()}`;
 
       const itemDetails = order.items
-      .map((item) => `#${item.productId}`)
-      .join(', ');
+        .map((item) => `#${item.productId}`)
+        .join(', ');
 
       const payload = {
         accountNo: this.accountNumber,
@@ -39,24 +45,26 @@ export class VietqrStrategy implements PaymentStrategy {
         amount: order.totalAmount,
         addInfo: `Payment for order #${order.id}: ${itemDetails}`,
         format: 'text',
-        template: 'compact'
-      }
+        template: 'compact',
+      };
 
       const response = await axios.post(this.vietqrUrl!, payload, {
         headers: {
           'Content-Type': 'application/json',
           'x-client-id': this.clientId!,
           'x-api-key': this.apiKey!,
-        }})
+        },
+      });
 
-      const payment = this.paymentRepo.create({ 
+      const payment = this.paymentRepo.create({
         method: 'VIETQR',
         amount: order.totalAmount,
         order: order,
-        transactionId: fakeBankTransId
+        transactionId: fakeBankTransId,
+        status: 'PENDING',
       });
 
-      this.paymentRepo.save(payment);
+      await this.paymentRepo.save(payment);
 
       return {
         method: 'VIETQR',
@@ -64,7 +72,23 @@ export class VietqrStrategy implements PaymentStrategy {
         qrData: response.data.data.qrDataURL,
       };
     } catch (error) {
-      throw new Error(`Failed to create VietQR payment request: ${error.message}`);
+      console.error('VietQR Create Error:', error);
+      throw new InternalServerErrorException(
+        `Failed to create VietQR payment request: ${error.message}`,
+      );
     }
+  }
+
+  async verifyTransaction(transactionId: string): Promise<boolean> {
+    return true;
+  }
+
+  async refundTransaction(
+    transactionId: string,
+    amount?: number,
+  ): Promise<boolean> {
+    throw new NotImplementedException(
+      'Auto-refund is not supported for VietQR/Bank Transfer. Please refund manually.',
+    );
   }
 }

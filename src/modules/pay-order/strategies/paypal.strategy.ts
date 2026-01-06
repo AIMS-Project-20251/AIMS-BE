@@ -9,21 +9,20 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class PaypalStrategy implements PaymentStrategy {
-  private readonly baseUrl: string | undefined;
-  private readonly clientId: string | undefined;
-  private readonly clientSecret: string | undefined;
+  private readonly baseUrl: string;
+  private readonly clientId: string;
+  private readonly clientSecret: string;
 
   constructor(
     @InjectRepository(Payment) private paymentRepo: Repository<Payment>,
   ) {
-    this.baseUrl = env.paypal.url;
-    this.clientId = env.paypal.clientId;
-    this.clientSecret = env.paypal.clientSecret;
+    this.baseUrl = env.paypal.url || '';
+    this.clientId = env.paypal.clientId || '';
+    this.clientSecret = env.paypal.clientSecret || '';
   }
 
   async createPaymentRequest(order: Order): Promise<PaymentResponse> {
     const accessToken = await this.getAccessToken();
-
     const amountUSD = (order.totalAmount / 24000).toFixed(2);
 
     try {
@@ -34,10 +33,7 @@ export class PaypalStrategy implements PaymentStrategy {
           purchase_units: [
             {
               reference_id: order.id.toString(),
-              amount: {
-                currency_code: 'USD',
-                value: amountUSD,
-              },
+              amount: { currency_code: 'USD', value: amountUSD },
             },
           ],
           application_context: {
@@ -59,20 +55,26 @@ export class PaypalStrategy implements PaymentStrategy {
         (link: any) => link.rel === 'approve',
       );
       const url = new URL(approveLink.href);
-      const transactionId = url.searchParams.get('token') ?? undefined;
+      const transactionId = url.searchParams.get('token');
+
+      if (!transactionId) {
+        throw new InternalServerErrorException(
+          'Failed to extract transaction ID from PayPal response',
+        );
+      }
 
       const payment = this.paymentRepo.create({
         method: 'PAYPAL',
         transactionId: transactionId,
         amount: order.totalAmount,
         order: order,
+        status: 'PENDING',
       });
-
-      this.paymentRepo.save(payment);
+      await this.paymentRepo.save(payment);
 
       return {
         method: 'PAYPAL',
-        transactionId: payment.transactionId,
+        transactionId: transactionId,
         paymentUrl: approveLink.href,
       };
     } catch (error) {
@@ -80,12 +82,11 @@ export class PaypalStrategy implements PaymentStrategy {
     }
   }
 
-  async capturePayment(paypalOrderId: string) {
+  async verifyTransaction(transactionId: string): Promise<boolean> {
     const accessToken = await this.getAccessToken();
-
     try {
       const response = await axios.post(
-        `${this.baseUrl}/v2/checkout/orders/${paypalOrderId}/capture`,
+        `${this.baseUrl}/v2/checkout/orders/${transactionId}/capture`,
         {},
         {
           headers: {
@@ -94,28 +95,24 @@ export class PaypalStrategy implements PaymentStrategy {
           },
         },
       );
-
-      if (response.data.status === 'COMPLETED') {
-        return response.data;
-      } else {
-        throw new Error('Payment not completed');
-      }
+      return response.data.status === 'COMPLETED';
     } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to capture PayPal payment',
-      );
+      // Nếu lỗi do đã capture rồi thì check lại status
+      console.error('Verify transaction error', error.message);
+      return false;
     }
   }
 
-  async refundPayment(captureId: string, amountUSD?: string) {
+  async refundTransaction(
+    captureId: string,
+    amount?: number,
+  ): Promise<boolean> {
     const accessToken = await this.getAccessToken();
-
     try {
-      const body = amountUSD
-        ? { amount: { value: amountUSD, currency_code: 'USD' } }
+      const body = amount
+        ? { amount: { value: amount.toString(), currency_code: 'USD' } }
         : {};
-
-      const response = await axios.post(
+      await axios.post(
         `${this.baseUrl}/v2/payments/captures/${captureId}/refund`,
         body,
         {
@@ -125,10 +122,9 @@ export class PaypalStrategy implements PaymentStrategy {
           },
         },
       );
-
-      return response.data;
+      return true;
     } catch (err) {
-      console.log(err.response?.data);
+      console.error(err.response?.data);
       throw new InternalServerErrorException('Failed to refund payment');
     }
   }

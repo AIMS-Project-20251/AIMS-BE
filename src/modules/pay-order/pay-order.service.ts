@@ -7,118 +7,95 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order, OrderStatus } from '../place-order/entities/order.entity';
-import { PaypalStrategy } from './strategies/paypal.strategy';
-import { VietqrStrategy } from './strategies/vietqr.strategy';
-import {
-  PaymentStrategy,
-  PaymentResponse,
-} from './strategies/payment.strategy.interface';
-import { MailSenderService } from '../mail-sender/mail-sender.service';
-import { ProductsStrategy } from '../products/strategies/products.strategy.interface';
-import { BooksStrategy } from '../products/strategies/books.strategy';
-import { CdsStrategy } from '../products/strategies/cds.strategy';
-import { DvdsStrategy } from '../products/strategies/dvds.strategy';
-import { NewspapersStrategy } from '../products/strategies/newspapers.strategy';
 import { Payment } from './entities/payment.entity';
+import { PaymentResponse } from './strategies/payment.strategy.interface';
+import { MailSenderService } from '../mail-sender/mail-sender.service';
 import { PRODUCT_STRATEGIES } from '../products/constants/product-strategies.token';
+import { ProductsStrategy } from '../products/strategies/products.strategy.interface';
 import { ProductType } from '../products/entities/base-product.entity';
+import { PaymentStrategyFactory } from './strategies/payment.strategy.factory';
 
 @Injectable()
 export class PayOrderService {
-  private readonly paymentStrategies: Record<string, PaymentStrategy>;
-
   constructor(
     @InjectRepository(Order) private orderRepo: Repository<Order>,
     @InjectRepository(Payment) private paymentRepo: Repository<Payment>,
     @Inject(PRODUCT_STRATEGIES)
     private readonly productsStrategies: Record<ProductType, ProductsStrategy>,
-    private readonly paypalStrategy: PaypalStrategy,
-    private readonly vietqrStrategy: VietqrStrategy,
+    private readonly paymentStrategyFactory: PaymentStrategyFactory,
     private readonly mailSenderService: MailSenderService,
-  ) {
-    this.paymentStrategies = {
-      PAYPAL: this.paypalStrategy,
-      VIETQR: this.vietqrStrategy,
-    };
-  }
+  ) {}
 
-  async initiatePayment(orderId: number, method: 'PAYPAL' | 'VIETQR' = 'VIETQR'): Promise<PaymentResponse> {
+  async initiatePayment(
+    orderId: number,
+    method: string = 'VIETQR',
+  ): Promise<PaymentResponse> {
     const order = await this.orderRepo.findOne({
       where: { id: orderId, status: OrderStatus.CREATED },
       relations: ['items'],
     });
     if (!order) {
-      throw new BadRequestException('Order not found');
+      throw new BadRequestException('Order not found or already paid');
     }
-  
+
     for (const item of order.items) {
-      let product;
       const strategy = this.productsStrategies[item.productType];
       if (!strategy) {
         throw new BadRequestException(
           `Product type ${item.productType} is not supported`,
         );
       }
-      product = await strategy.findOne(item.productId);
-      item['product'] = product;
+      item['product'] = await strategy.findOne(item.productId);
     }
-  
-    const strategy = this.paymentStrategies[method];
-    if (!strategy) {
-      throw new BadRequestException(
-        `Payment method ${method} is not supported`,
-      );
-    }
-  
+
+    const strategy = this.paymentStrategyFactory.getStrategy(method);
     return strategy.createPaymentRequest(order);
   }
-  
 
-  // async confirmPaypalTransaction(paypalOrderId: string) {
-  //   const captureData = await this.paypalStrategy.capturePayment(paypalOrderId);
-  //   const myDbId = captureData.purchase_units[0].reference_id;
-
-  //   const order = await this.orderRepo.findOne({ where: { id: Number(myDbId) } });
-  //   if (!order) throw new NotFoundException('Order not found');
-
-  //   order.status = OrderStatus.PAID;
-  //   await this.orderRepo.save(order);
-
-  //   const invoice = this.invoiceRepo.create({
-  //     order: order,
-  //     totalAmount: order.totalAmount,
-  //     paymentMethod: 'PAYPAL',
-  //     transactionId: captureData.id,
-  //   });
-  //   await this.invoiceRepo.save(invoice);
-
-  //   return { success: true, orderId: order.id };
-  // }
-
-  async confirmPaypalTransaction(paypalOrderId: string) {
+  async confirmTransaction(transactionId: string, method?: string) {
     const payment = await this.paymentRepo.findOne({
-      where: { transactionId: paypalOrderId, method: 'PAYPAL' },
+      where: { transactionId: transactionId },
       relations: ['order'],
     });
+
     if (!payment) {
-      throw new NotFoundException('Payment not found');
+      throw new NotFoundException('Payment transaction not found');
     }
 
-    payment.status = 'COMPLETED';
-    await this.paymentRepo.save(payment);
+    if (payment.status === 'COMPLETED') {
+      return { success: true, message: 'Transaction already completed' };
+    }
 
-    const order = payment.order;
-    order.status = OrderStatus.PAID;
-    
-    await this.orderRepo.save(order);
+    const paymentMethod = payment.method;
 
-    this.mailSenderService.sendOrderSuccessEmail(order.id);
+    const strategy = this.paymentStrategyFactory.getStrategy(paymentMethod);
+
+    try {
+      const isVerified = await strategy.verifyTransaction(transactionId);
+
+      if (isVerified) {
+        payment.status = 'COMPLETED';
+        await this.paymentRepo.save(payment);
+
+        const order = payment.order;
+        order.status = OrderStatus.PAID;
+        await this.orderRepo.save(order);
+
+        await this.mailSenderService.sendOrderSuccessEmail(order.id);
+
+        return { success: true };
+      } else {
+        throw new BadRequestException('Transaction verification failed');
+      }
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException('Could not verify transaction');
+    }
   }
 
-  async cancelPaypalTransaction(paypalOrderId: string) {
+  async cancelTransaction(transactionId: string) {
     const payment = await this.paymentRepo.findOne({
-      where: { transactionId: paypalOrderId, method: 'PAYPAL' },
-      relations: ['order'],
+      where: { transactionId: transactionId },
     });
     if (!payment) {
       throw new NotFoundException('Payment not found');
@@ -126,51 +103,17 @@ export class PayOrderService {
 
     payment.status = 'CANCELLED';
     await this.paymentRepo.save(payment);
-  }
-
-  // async comfirmVietqrTransaction(vietQROrderId: string) {
-  //   const order = await this.orderRepo.findOne({ where: { id: Number(vietQROrderId) } });
-  //   if (!order) throw new NotFoundException('Order not found');
-
-  //   order.status = OrderStatus.PAID;
-  //   await this.orderRepo.save(order);
-
-  //   const fakeBankTransId = `VQR-${Date.now()}`;
-
-  //   // const invoice = this.invoiceRepo.create({
-  //   //   order: order,
-  //   //   totalAmount: order.totalAmount,
-  //   //   paymentMethod: 'VIETQR',
-  //   //   transactionId: fakeBankTransId,
-  //   // });
-  //   await this.invoiceRepo.save(invoice);
-
-  //   return { success: true, orderId: order.id };
-  // }
-
-  async comfirmVietqrTransaction(vietQROrderId: string) {
-    const payment = await this.paymentRepo.findOne({
-      where: { transactionId: vietQROrderId, method: 'VIETQR' },
-      relations: ['order'],
-    });
-    if (!payment) {
-      throw new NotFoundException('Payment not found');
-    }
-
-    payment.status = 'COMPLETED';
-    await this.paymentRepo.save(payment);
-
-    const order = payment.order;
-    order.status = OrderStatus.PAID;
-    
-    await this.orderRepo.save(order);
-
-    this.mailSenderService.sendOrderSuccessEmail(order.id);
-
     return { success: true };
   }
 
-  async refund(captureId: string, amountUSD?: string) {
-    return this.paypalStrategy.refundPayment(captureId, amountUSD);
+  async refund(transactionId: string, amount?: number) {
+    const payment = await this.paymentRepo.findOne({
+      where: { transactionId },
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+
+    const strategy = this.paymentStrategyFactory.getStrategy(payment.method);
+
+    return strategy.refundTransaction(transactionId, amount);
   }
 }
