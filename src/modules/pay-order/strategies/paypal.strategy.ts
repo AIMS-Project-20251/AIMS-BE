@@ -39,8 +39,8 @@ export class PaypalStrategy implements PaymentStrategy {
           application_context: {
             brand_name: 'AIMS',
             user_action: 'PAY_NOW',
-            return_url: `http://${env.fe_url}/order-success`,
-            cancel_url: `http://${env.fe_url}/order-fail`,
+            return_url: `${env.fe_url}/order-success`,
+            cancel_url: `${env.fe_url}/order-fail`,
           },
         },
         {
