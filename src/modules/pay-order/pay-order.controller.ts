@@ -6,43 +6,36 @@ import { ConfirmVietqrDto } from './dto/confirm-vietqr.dto';
 
 @Controller('pay-order')
 export class PayOrderController {
-  constructor(private readonly payOrderService: PayOrderService) { }
+  constructor(private readonly payOrderService: PayOrderService) {}
 
   @Post('create')
   create(@Body() dto: PaymentRequestDto) {
-    console.log('Payment Request DTO:', dto);
     return this.payOrderService.initiatePayment(dto.orderId, dto.method);
   }
 
   @Get('confirm-paypal')
   confirmPaypal(@Query('token') token: string) {
-    return this.payOrderService.confirmPaypalTransaction(token);
+    return this.payOrderService.confirmTransaction(token, 'PAYPAL');
+  }
+
+  @Post('confirm-vietqr')
+  confirmVietqr(@Body() body: ConfirmVietqrDto) {
+    return this.payOrderService.confirmTransaction(
+      body.vietQROrderId,
+      'VIETQR',
+    );
   }
 
   @Get('cancel-paypal')
   cancelPaypal(@Query('token') token: string) {
-    return this.payOrderService.cancelPaypalTransaction(token);
+    return this.payOrderService.cancelTransaction(token);
   }
 
-  @Post('refund-paypal')
-  refundPaypal(
-    @Body('captureId') captureId: string,
-    @Body('amountUSD') amountUSD?: string,
+  @Post('refund')
+  refundTransaction(
+    @Body('transactionId') transactionId: string,
+    @Body('amount') amount?: number,
   ) {
-    return this.payOrderService.refund(captureId, amountUSD);
-  }
-
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        vietQROrderId: { type: 'string', example: "123" },
-      },
-      required: ['vietQROrderId'],
-    },
-  })
-  @Post('confirm-vietqr')
-  confirmVietqr(@Body() body: ConfirmVietqrDto) {
-    return this.payOrderService.comfirmVietqrTransaction(body.vietQROrderId);
+    return this.payOrderService.refund(transactionId, amount);
   }
 }

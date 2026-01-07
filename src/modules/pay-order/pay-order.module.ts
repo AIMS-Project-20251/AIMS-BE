@@ -13,6 +13,7 @@ import { CD } from '../products/entities/cd.entity';
 import { DVD } from '../products/entities/dvd.entity';
 import { Newspaper } from '../products/entities/newspaper.entity';
 import { ProductsModule } from '../products/products.module';
+import { PaymentStrategyFactory } from './strategies/payment.strategy.factory';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ProductsModule } from '../products/products.module';
     PaypalStrategy, 
     VietqrStrategy,
     MailSenderService,
+    PaymentStrategyFactory,
   ],
 })
 export class PayOrderModule {}
