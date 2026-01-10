@@ -28,7 +28,7 @@ export class NewspapersStrategy implements ProductsStrategy {
             .innerJoinAndSelect('newspaper.baseProduct', 'base')
             .where('base.isActive = :isActive', { isActive: true });
 
-        if (search) query.andWhere('base.title ILIKE :search', { search: `%${search}%` });
+        if (search) query.andWhere('base.title LIKE :search', { search: `%${search}%` });
         if (category) query.andWhere('base.category = :category', { category });
 
         const news = await query.getMany();
